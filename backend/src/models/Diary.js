@@ -1,0 +1,1 @@
+const mongoose=require('mongoose');const diarySchema=new mongoose.Schema({userId:{type:mongoose.Schema.Types.ObjectId,ref:'User',required:true},title:{type:String,required:true},content:{type:String,default:''},musicKey:{type:String,enum:['none','calm','focus','rain'],default:'none'}},{timestamps:true});module.exports=mongoose.model('Diary', diarySchema);

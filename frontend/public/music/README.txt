@@ -1,0 +1,1 @@
+Sample WAVs included: calm.wav, focus.wav, rain.wav. Replace with MP3s of the same names if you prefer.

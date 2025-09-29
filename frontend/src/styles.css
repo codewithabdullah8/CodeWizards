@@ -1,0 +1,35 @@
+body {
+    background: #f5f7fb;
+}
+
+.card {
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+    border: 0;
+}
+
+.navbar-brand {
+    font-weight: 700;
+    letter-spacing: 0.2px;
+}
+
+.btn-primary {
+    border-radius: 6px;
+}
+
+.form-control {
+    border-radius: 6px;
+}
+
+.hero {
+    max-width: 860px;
+    margin: 30px auto;
+}
+
+.entry-card:hover {
+    transform: translateY(-2px);
+    transition: 0.15s ease;
+}
+
+.music-badge {
+    font-size: 0.8rem;
+}

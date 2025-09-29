@@ -1,0 +1,1 @@
+const mongoose=require('mongoose');const reminderSchema=new mongoose.Schema({userId:{type:mongoose.Schema.Types.ObjectId,ref:'User',required:true},date:{type:Date,required:true},message:{type:String,default:"You didn't write your diary today."}},{timestamps:true});reminderSchema.index({userId:1,date:1},{unique:true});module.exports=mongoose.model('Reminder', reminderSchema);

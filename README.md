@@ -1,0 +1,1 @@
+# MyDiary — MERN with music & reminders. See backend/.env.example, run backend then frontend. Audio samples included (WAV).
