@@ -15,11 +15,16 @@ const CRON_ENABLED = process.env.CRON_ENABLED !== 'false';
 const User = require('./src/models/User');
 const Diary = require('./src/models/Diary');
 const Reminder = require('./src/models/Reminder');
+const ProfessionalDiary = require('./src/models/ProfessionalDiary/ProfessionalDiary');
 
 app.use('/api/auth', require('./src/routes/auth'));
 app.use('/api/diary', require('./src/routes/diary'));
 app.use('/api/reminders', require('./src/routes/reminders'));
 app.get('/api/health', (req,res)=>res.json({ok:true}));
+app.use('/api/auth', require('./src/routes/auth'));
+app.use('/api/diary', require('./src/routes/diary'));
+app.use('/api/reminders', require('./src/routes/reminders'));
+app.use('/api/professional-diary', require('./src/routes/ProfessionalDairy'));  
 
 mongoose.connect(MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true })
 .then(()=>{
