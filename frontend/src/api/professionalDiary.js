@@ -12,27 +12,23 @@ API.interceptors.request.use((req) => {
 });
 
 const ProAPI = {
-  // ➤ Get all entries
-  getEntries: () => API.get("/entries"),
+  // ➤ Get all entries for logged-in user
+  getEntries: () => API.get("/all"),
 
   // ➤ Get single entry
-  getEntryById: (id) => API.get(`/entries/${id}`),
+  getEntryById: (id) => API.get(`/entry/${id}`),
 
   // ➤ Create entry
-  createEntry: (payload) => API.post("/entries", payload),
+  createEntry: (payload) => API.post("/new", payload),
 
   // ➤ Update entry
-  updateEntry: (id, payload) => API.put(`/entries/${id}`, payload),
+  updateEntry: (id, payload) => API.put(`/update/${id}`, payload),
 
   // ➤ Delete entry
-  deleteEntry: (id) => API.delete(`/entries/${id}`),
+  deleteEntry: (id) => API.delete(`/delete/${id}`),
 
-  // ➤ Mood Logs
-  getMoodLogs: () => API.get("/moods"),
-  createMoodLog: (payload) => API.post("/moods", payload),
-
-  // ➤ Calendar view
-  getCalendarEntries: () => API.get("/calendar"),
+  // ➤ Get entries by date
+  getByDate: (date) => API.get(`/date/${date}`),
 };
 
 export default ProAPI;
