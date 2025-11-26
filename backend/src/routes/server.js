@@ -1,47 +1,42 @@
 // backend/server.js
-
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
 const cron = require('node-cron');
 
-const authRoutes = require('./src/routes/auth');          // /api/auth/...
-const diaryRoutes = require('./src/routes/diaryRoutes');  // /api/diary/...
-const reminderRoutes = require('./src/routes/reminders'); // /api/reminders/...
+const authRoutes = require('./src/routes/auth');
+const diaryRoutes = require('./src/routes/diaryRoutes');
+const reminderRoutes = require('./src/routes/reminders');
 
 const app = express();
 
-// ---------- MIDDLEWARE ----------
-app.use(
-  cors({
-    origin: 'http://localhost:3000', // your React dev server
-    credentials: true,
-  })
-);
+// ---------- Middleware ----------
+app.use(cors());
 app.use(express.json());
 
-// ---------- HEALTH CHECK ----------
+// ---------- Health check ----------
 app.get('/api/health', (req, res) => {
   res.json({ ok: true });
 });
 
-// ---------- ROUTES ----------
-// Auth:  POST /api/auth/signup, POST /api/auth/login
+// ---------- Routes ----------
+// Auth: /api/auth/login, /api/auth/signup
 app.use('/api/auth', authRoutes);
 
-// Diary: GET/POST /api/diary, GET/PUT/DELETE /api/diary/:id
+// Diary: /api/diary, /api/diary/:id, ...
+// (router itself will use "/", "/:id")
 app.use('/api/diary', diaryRoutes);
 
-// Reminders: e.g. GET /api/reminders/today
+// Reminders: /api/reminders/today, etc.
 app.use('/api/reminders', reminderRoutes);
 
-// ---------- CRON JOB ----------
+// ---------- Cron ----------
 cron.schedule('5 0 * * *', () => {
   console.log('Cron scheduled 00:05.');
 });
 
-// ---------- DB + SERVER START ----------
+// ---------- DB + Server start ----------
 const PORT = process.env.PORT || 5000;
 const MONGODB_URI =
   process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/mydiaryDB';
@@ -53,7 +48,7 @@ mongoose
   .then(() => {
     console.log('Connected to MongoDB');
     app.listen(PORT, () => {
-      console.log(`Server running on http://localhost:${PORT}`);
+      console.log(`Server running on port ${PORT}`);
     });
   })
   .catch((err) => {
