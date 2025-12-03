@@ -51,9 +51,15 @@ const CRON_ENABLED = process.env.CRON_ENABLED !== 'false';
 
 console.log(`Attempting to connect to MongoDB at ${MONGODB_URI}`);
 
+if (MONGODB_URI.includes('<') || MONGODB_URI.includes('>')) {
+  console.warn('MONGODB_URI appears to contain placeholder angle-brackets. Remove < and > from the URI.');
+}
+
+const mongooseOptions = { useNewUrlParser: true, useUnifiedTopology: true };
+
 // ---------- DB + SERVER START ----------
 mongoose
-  .connect(MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true })
+  .connect(MONGODB_URI)
   .then(() => {
     console.log('Connected to MongoDB');
 
@@ -105,6 +111,7 @@ mongoose
     }
   })
   .catch((err) => {
-    console.error('MongoDB connection error:', err.message);
+    console.error('MongoDB connection error (full):', err);
+    // exit with non-zero so process managers know startup failed
     process.exit(1);
   });

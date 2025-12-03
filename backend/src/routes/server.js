@@ -10,6 +10,9 @@ const diaryRoutes = require('./src/routes/diaryRoutes');
 const reminderRoutes = require('./src/routes/reminders');
 
 const app = express();
+const express = require('express');
+const dotenv = require('dotenv');
+dotenv.config();  
 
 // ---------- Middleware ----------
 app.use(cors());
