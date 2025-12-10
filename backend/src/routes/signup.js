@@ -23,11 +23,12 @@ router.post('/', async (req, res) => {
 
     const JWT_SECRET = process.env.JWT_SECRET || 'supersecret_change_me';
     if (!process.env.JWT_SECRET) console.warn('JWT_SECRET not set — using fallback secret (dev only)');
+    const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '7d';
 
     const token = jwt.sign(
       { id: user._id, name: user.name, email: user.email },
       JWT_SECRET,
-      { expiresIn: '7d' }
+      { expiresIn: JWT_EXPIRES_IN }
     );
 
     res.json({

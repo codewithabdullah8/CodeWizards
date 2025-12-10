@@ -18,6 +18,12 @@ module.exports = function (req, res, next) {
     req.user = decoded;
     next();
   } catch (e) {
+    // Distinguish expired tokens from other errors so client can react accordingly
+    if (e.name === 'TokenExpiredError') {
+      console.warn('JWT token expired for request');
+      return res.status(401).json({ message: 'Token expired', tokenExpired: true, expiredAt: e.expiredAt });
+    }
+
     console.error('JWT verify error:', e.name, e.message);
     return res.status(401).json({ message: 'Invalid token' });
   }

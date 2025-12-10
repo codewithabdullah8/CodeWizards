@@ -28,11 +28,15 @@ router.post('/signup', async (req, res) => {
 
     const user = await User.create({ name, email, passwordHash });
 
-    // ✅ use ONLY process.env.JWT_SECRET
+    // Sign token using configurable expiry
+    const JWT_SECRET = process.env.JWT_SECRET || 'supersecret_change_me';
+    if (!process.env.JWT_SECRET) console.warn('JWT_SECRET not set — using fallback secret (dev only)');
+    const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '7d';
+
     const token = jwt.sign(
       { id: user._id, name: user.name, email: user.email },
-      process.env.JWT_SECRET,
-      { expiresIn: '7d' }
+      JWT_SECRET,
+      { expiresIn: JWT_EXPIRES_IN }
     );
 
     res.json({
@@ -68,11 +72,14 @@ router.post('/login', async (req, res) => {
       return res.status(400).json({ message: 'Invalid credentials' });
     }
 
-    // ✅ use ONLY process.env.JWT_SECRET
+    const JWT_SECRET = process.env.JWT_SECRET || 'supersecret_change_me';
+    if (!process.env.JWT_SECRET) console.warn('JWT_SECRET not set — using fallback secret (dev only)');
+    const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '7d';
+
     const token = jwt.sign(
       { id: user._id, name: user.name, email: user.email },
-      process.env.JWT_SECRET,
-      { expiresIn: '7d' }
+      JWT_SECRET,
+      { expiresIn: JWT_EXPIRES_IN }
     );
 
     res.json({
