@@ -26,7 +26,7 @@ export default function Calendar() {
             <h3>{e.title}</h3>
             <p>{new Date(e.date).toDateString()}</p>
           </Link>
-        ))}
+        ))} 
       </div>
     </div>
   );
