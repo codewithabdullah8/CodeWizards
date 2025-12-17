@@ -24,7 +24,7 @@ app.get('/api/health', (req,res)=>res.json({ok:true}));
 app.use('/api/auth', require('./src/routes/auth'));
 app.use('/api/diary', require('./src/routes/diary'));
 app.use('/api/reminders', require('./src/routes/reminders'));
-app.use('/api/professional-diary', require('./src/routes/ProfessionalDairy'));  
+app.use('/api/professional-diary', require('./src/routes/ProfessionalDiary'));  
 
 mongoose.connect(MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true })
 .then(()=>{
