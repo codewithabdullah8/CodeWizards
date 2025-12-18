@@ -1,32 +1,56 @@
-import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
 import ProAPI from "../../api/professionalDiary";
+import { Link } from "react-router-dom";
 
-export default function Home() {
+export default function ProfessionalHome() {
   const [entries, setEntries] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    const user = JSON.parse(localStorage.getItem("mydiary_user"));
-    if (!user) return;
-
-    ProAPI.getAll(user._id).then(({ data }) => setEntries(data));
+    ProAPI.getEntries()
+      .then((res) => {
+        setEntries(res.data);
+        setLoading(false);
+      })
+      .catch((err) => {
+        setError("Failed to load professional diary");
+        setLoading(false);
+      });
   }, []);
 
+  if (loading) return <p>Loading...</p>;
+  if (error) return <p style={{ color: "red" }}>{error}</p>;
+
   return (
-    <div className="page">
+    <div style={{ padding: "20px" }}>
       <h2>Professional Diary</h2>
 
-      <Link to="/professional/new" className="button">+ New Entry</Link>
+      <Link to="/professional/new">
+        <button style={{ marginBottom: "15px" }}>+ New Entry</button>
+      </Link>
 
-      <div className="entries-list">
-        {entries.map((e) => (
-          <Link key={e._id} to={`/professional/view/${e._id}`} className="entry-card">
-            <h3>{e.title}</h3>
-            <p>{new Date(e.date).toDateString()}</p>
-            <span>{e.category}</span>
-          </Link>
-        ))}
-      </div>
+      {entries.length === 0 ? (
+        <p>No professional entries yet.</p>
+      ) : (
+        entries.map((e) => (
+          <div
+            key={e._id}
+            style={{
+              border: "1px solid #ccc",
+              padding: "10px",
+              marginBottom: "10px",
+              borderRadius: "6px",
+            }}
+          >
+            <h4>{e.title}</h4>
+            <p>{e.description}</p>
+            <small>
+              {new Date(e.date).toLocaleDateString()}
+            </small>
+          </div>
+        ))
+      )}
     </div>
   );
 }

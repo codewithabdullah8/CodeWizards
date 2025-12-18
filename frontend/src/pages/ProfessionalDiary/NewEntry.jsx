@@ -1,54 +1,42 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import ProAPI from "../../api/professionalDiary";
 
 export default function NewEntry() {
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
   const navigate = useNavigate();
-  const user = JSON.parse(localStorage.getItem("mydiary_user"));
 
-  const [form, setForm] = useState({
-    title: "",
-    description: "",
-    category: "",
-    mood: "",
-  });
-
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-    await ProAPI.create({ ...form, userId: user._id });
-    navigate("/professional");
+
+    ProAPI.createEntry({ title, description })
+      .then(() => navigate("/professional"))
+      .catch(() => alert("Failed to create entry"));
   };
 
   return (
-    <div className="page">
+    <div style={{ padding: "20px" }}>
       <h2>New Professional Entry</h2>
 
       <form onSubmit={handleSubmit}>
         <input
           placeholder="Title"
-          value={form.title}
-          onChange={(e) => setForm({ ...form, title: e.target.value })}
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          required
         />
+        <br /><br />
 
         <textarea
           placeholder="Description"
-          value={form.description}
-          onChange={(e) => setForm({ ...form, description: e.target.value })}
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          required
         />
+        <br /><br />
 
-        <input
-          placeholder="Category (Work/Study/Project...)"
-          value={form.category}
-          onChange={(e) => setForm({ ...form, category: e.target.value })}
-        />
-
-        <input
-          placeholder="Mood"
-          value={form.mood}
-          onChange={(e) => setForm({ ...form, mood: e.target.value })}
-        />
-
-        <button className="button" type="submit">Save Entry</button>
+        <button type="submit">Save</button>
       </form>
     </div>
   );

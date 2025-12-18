@@ -1,15 +1,22 @@
-import axios from 'axios';
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import Home from "./pages/Home";
+import Login from "./pages/Login";
+import ProfessionalHome from "./pages/ProfessionalDiary/Home";
+import NewEntry from "./pages/ProfessionalDiary/NewEntry";
 
-const API = axios.create({
-  baseURL: 'http://localhost:5000/api',
-});
+function App() {
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/login" element={<Login />} />
 
-API.interceptors.request.use((config) => {
-  const token = localStorage.getItem('mydiary_token');
-  if (token) {
-    config.headers.Authorization = 'Bearer ' + token;
-  }
-  return config;
-});
+        {/* Professional Diary */}
+        <Route path="/professional" element={<ProfessionalHome />} />
+        <Route path="/professional/new" element={<NewEntry />} />
+      </Routes>
+    </BrowserRouter>
+  );
+}
 
-export default API;
+export default App;
