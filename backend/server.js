@@ -15,7 +15,7 @@ let User, Diary, Reminder, ProfessionalDiary;
 try { User = require('./src/models/User'); } catch (e) {}
 try { Diary = require('./src/models/Diary'); } catch (e) {}
 try { Reminder = require('./src/models/Reminder'); } catch (e) {}
-try { ProfessionalDiary = require('./src/models/ProfessionalDiary/ProfessionalDiary'); } catch (e) {}
+try { ProfessionalDiary = require('./src/models/ProfessionalDiary.js'); } catch (e) {}
 
 const app = express();
 
@@ -40,8 +40,8 @@ app.use('/api/reminders', reminderRoutes);
 
 // Optional Professional Diary route (only enable if file exists)
 try {
-  // app.use('/api/professional-diary', require('./src/routes/ProfessionalDairy'));
-  // app.use('/api/professional-diary', require('./src/routes/ProfessionalDiary'));
+  app.use('/api/professional-diary', require('./src/routes/ProfessionalDiary.js'));
+  app.use('/api/professional-diary', require('./src/routes/ProfessionalDiary.js'));
 } catch (e) {}
 
 // ---------- CONFIG ----------

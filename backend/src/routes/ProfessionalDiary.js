@@ -1,4 +1,4 @@
-// backend/src/routes/professionalDiary.js
+// backend/src/routes/ProfessionalDiary.js
 const express = require('express');
 const router = express.Router();
 const ProfessionalDiary = require('../models/ProfessionalDiary');
