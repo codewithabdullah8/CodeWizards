@@ -7,9 +7,9 @@ import { useParams, useNavigate } from 'react-router-dom';
 import API from '../api';
 
 const MP3_FIRST = {
-  calm: ['/music/calm.mp3', '/music/calm.wav'],
-  focus: ['/music/focus.mp3', '/music/focus.wav'],
-  rain: ['/music/rain.mp3', '/music/rain.wav'],
+  calm: ['/music/calm.mp3'],
+  focus: ['/music/focus.mp3'],
+  rain: ['/music/rain.mp3'],
   none: [null],
 };
 
@@ -182,7 +182,9 @@ export default function DiaryEntry() {
   const [entry, setEntry] = useState(null);
   const [error, setError] = useState('');
   const audioRef = useRef(null);
-  const [autoPlayFailed, setAutoPlayFailed] = useState(false);
+  const [audioLoaded, setAudioLoaded] = useState(false);
+  const [audioError, setAudioError] = useState('');
+  const [isPlaying, setIsPlaying] = useState(false);
   const [editing, setEditing] = useState(false);
   const [draftTitle, setDraftTitle] = useState('');
   const [draftContent, setDraftContent] = useState('');
@@ -200,27 +202,49 @@ export default function DiaryEntry() {
   }, [id]);
 
   useEffect(() => {
-    if (!entry) return;
+    if (!entry || !entry.musicKey || entry.musicKey === 'none') return;
 
-    const candidates = MP3_FIRST[entry.musicKey || 'none'];
+    const candidates = MP3_FIRST[entry.musicKey];
     const audio = audioRef.current;
 
     if (!candidates || !audio || !candidates[0]) return;
 
-    async function tryPlay(urls) {
-      for (const src of urls) {
-        try {
-          audio.src = src;
-          audio.loop = true;
-          await audio.play();
-          return;
-        } catch (e) {}
-      }
-      setAutoPlayFailed(true);
-    }
+    // Set up audio source without autoplay
+    audio.src = candidates[0]; // Try MP3 first
+    audio.loop = true;
 
-    tryPlay(candidates);
+    // Handle audio events
+    const handleCanPlay = () => setAudioLoaded(true);
+    const handleError = () => {
+      setAudioError('Audio file not found or unsupported format. Please ensure MP3 files are in /public/music/');
+    };
+    const handlePlay = () => setIsPlaying(true);
+    const handlePause = () => setIsPlaying(false);
+
+    audio.addEventListener('canplay', handleCanPlay);
+    audio.addEventListener('error', handleError);
+    audio.addEventListener('play', handlePlay);
+    audio.addEventListener('pause', handlePause);
+
+    return () => {
+      audio.removeEventListener('canplay', handleCanPlay);
+      audio.removeEventListener('error', handleError);
+      audio.removeEventListener('play', handlePlay);
+      audio.removeEventListener('pause', handlePause);
+    };
   }, [entry]);
+
+  const handlePlayMusic = async () => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    try {
+      setAudioError('');
+      await audio.play();
+    } catch (e) {
+      setAudioError('Unable to play audio. Please check your browser settings.');
+    }
+  };
 
   if (error) {
     return (
@@ -352,13 +376,50 @@ export default function DiaryEntry() {
 
         {entry.musicKey !== 'none' && (
           <div className="mt-3">
-            <audio ref={audioRef} controls style={{ width: '100%' }} />
-            {autoPlayFailed && (
-              <div className="alert alert-info mt-2 py-2">
-                Autoplay was blocked or the file type isn't supported. <br />
-                Click play or replace with an MP3 in <code>/public/music</code>.
-              </div>
-            )}
+            <div className="d-flex align-items-center justify-content-between mb-2">
+              <h6 className="mb-0">
+                <i className="bi bi-music-note me-2"></i>
+                Ambient Music: {entry.musicKey.charAt(0).toUpperCase() + entry.musicKey.slice(1)}
+              </h6>
+              {!audioLoaded && !audioError && (
+                <div className="spinner-border spinner-border-sm text-primary" role="status">
+                  <span className="visually-hidden">Loading...</span>
+                </div>
+              )}
+            </div>
+
+            <div className="audio-controls">
+              <audio
+                ref={audioRef}
+                controls
+                style={{ width: '100%' }}
+                preload="metadata"
+              />
+
+              {audioError && (
+                <div className="alert alert-warning mt-2 py-2">
+                  <i className="bi bi-exclamation-triangle me-2"></i>
+                  {audioError}
+                  <br />
+                  <small className="text-muted">
+                    Make sure MP3 files are placed in <code>/public/music/</code> folder
+                  </small>
+                </div>
+              )}
+
+              {audioLoaded && !isPlaying && (
+                <div className="mt-2">
+                  <button
+                    type="button"
+                    className="btn btn-outline-primary btn-sm"
+                    onClick={handlePlayMusic}
+                  >
+                    <i className="bi bi-play-circle me-1"></i>
+                    Start Ambient Music
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         )}
       </div>

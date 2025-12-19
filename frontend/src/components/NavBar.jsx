@@ -22,97 +22,88 @@ export default function Navbar() {
   const isActive = (path) => location.pathname === path;
 
   return (
-    <nav style={styles.nav}>
-      <h2 style={styles.logo}>MyDiary</h2>
-
-      <div style={styles.links}>
-        {/* Personal, Professional, Schedule */}
-        <Link
-          style={{ 
-            ...styles.link, 
-            ...(isActive("/personal") ? styles.activeLink : {}) 
-          }}
-          to="/personal"
-        >
-          Personal
+    <nav className="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
+      <div className="container">
+        <Link className="navbar-brand fw-bold" to={loggedIn ? "/" : "/login"}>
+          <i className="bi bi-journal-bookmark me-2"></i>
+          MyDiary
         </Link>
 
-        <Link
-          style={{ 
-            ...styles.link, 
-            ...(isActive("/professional") ? styles.activeLink : {}) 
-          }}
-          to="/professional"
+        <button
+          className="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarNav"
+          aria-controls="navbarNav"
+          aria-expanded="false"
+          aria-label="Toggle navigation"
         >
-          Professional
-        </Link>
+          <span className="navbar-toggler-icon"></span>
+        </button>
 
-        <Link
-          style={{ 
-            ...styles.link, 
-            ...(isActive("/schedule") ? styles.activeLink : {}) 
-          }}
-          to="/schedule"
-        >
-          Schedule
-        </Link>
+        <div className="collapse navbar-collapse" id="navbarNav">
+          <ul className="navbar-nav me-auto">
+            {loggedIn && (
+              <>
+                <li className="nav-item">
+                  <Link
+                    className={`nav-link ${isActive("/professional") ? "active" : ""}`}
+                    to="/professional"
+                  >
+                    <i className="bi bi-briefcase me-1"></i>
+                    Professional
+                  </Link>
+                </li>
+                <li className="nav-item">
+                  <Link
+                    className={`nav-link ${isActive("/personal") ? "active" : ""}`}
+                    to="/personal"
+                  >
+                    <i className="bi bi-person me-1"></i>
+                    Personal
+                  </Link>
+                </li>
+                <li className="nav-item">
+                  <Link
+                    className={`nav-link ${isActive("/schedule") ? "active" : ""}`}
+                    to="/schedule"
+                  >
+                    <i className="bi bi-calendar-event me-1"></i>
+                    Schedule
+                  </Link>
+                </li>
+              </>
+            )}
+          </ul>
 
-        {/* Auth buttons on the right */}
-        {loggedIn ? (
-          <button style={styles.logout} onClick={handleLogout}>
-            Logout
-          </button>
-        ) : (
-          <>
-            <Link style={styles.link} to="/login">
-              Login
-            </Link>
-            <Link style={styles.link} to="/signup">
-              Signup
-            </Link>
-          </>
-        )}
+          <ul className="navbar-nav">
+            {loggedIn ? (
+              <li className="nav-item">
+                <button
+                  className="btn btn-outline-light ms-2"
+                  onClick={handleLogout}
+                >
+                  <i className="bi bi-box-arrow-right me-1"></i>
+                  Logout
+                </button>
+              </li>
+            ) : (
+              <>
+                <li className="nav-item">
+                  <Link className="nav-link" to="/login">
+                    Login
+                  </Link>
+                </li>
+                <li className="nav-item">
+                  <Link className="btn btn-primary ms-2" to="/signup">
+                    Sign Up
+                  </Link>
+                </li>
+              </>
+            )}
+          </ul>
+        </div>
       </div>
     </nav>
   );
 }
-
-const styles = {
-  nav: {
-    width: "100%",
-    padding: "12px 20px",
-    background: "#2C3E50",
-    color: "white",
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    boxSizing: "border-box",
-  },
-  logo: {
-    margin: 0,
-  },
-  links: {
-    display: "flex",
-    gap: "16px",
-    alignItems: "center",
-  },
-  link: {
-    color: "white",
-    textDecoration: "none",
-    fontSize: "16px",
-    padding: "6px 10px",
-    borderRadius: "6px",
-  },
-  activeLink: {
-    backgroundColor: "#1ABC9C",
-  },
-  logout: {
-    background: "#E74C3C",
-    border: "none",
-    padding: "6px 12px",
-    color: "white",
-    cursor: "pointer",
-    borderRadius: "5px",
-    fontSize: "14px",
-  },
-};
