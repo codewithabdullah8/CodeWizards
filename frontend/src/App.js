@@ -8,6 +8,8 @@ import {
 
 import NavBar from "./components/NavBar";
 import API from "./api";
+import { ThemeProvider } from "./contexts/ThemeContext";
+import { ToastProvider } from "./contexts/ToastContext";
 
 // Pages
 import Login from "./pages/Login";
@@ -32,14 +34,18 @@ export default function App() {
 
   const navigate = useNavigate();
 
-  // ✅ Check today's reminder after login
+  // Bootstrap tooltips are handled automatically with data-bs-toggle attributes
+  // No manual initialization needed in Bootstrap 5
+
+  // ✅ Check today's reminder after login (popup removed)
   useEffect(() => {
     if (!user) return;
 
     API.get("/reminders/today")
       .then(({ data }) => {
         if (data?.message) {
-          alert(data.message);
+          // alert(data.message); // Removed popup as requested
+          console.log("Reminder:", data.message); // Log to console instead
         }
       })
       .catch(() => {
@@ -56,7 +62,8 @@ export default function App() {
   };
 
   return (
-    <>
+    <ToastProvider>
+      <ThemeProvider>
       {/* Navbar always visible */}
       <NavBar user={user} onLogout={handleLogout} />
 
@@ -139,6 +146,7 @@ export default function App() {
         {/* Catch-all (keep LAST) */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
-    </>
+    </ThemeProvider>
+  </ToastProvider>
   );
 }

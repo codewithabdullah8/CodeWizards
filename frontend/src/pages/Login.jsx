@@ -1,9 +1,10 @@
 // src/pages/Login.jsx
-// Login (Bootstrap) with previous-entry suggestions + example chips
-// Matches the Signup UX (stores email history in localStorage under "auth_email_history")
+// Enhanced Login with creative UI/UX design
 
 import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import { useTheme } from '../contexts/ThemeContext';
 import API from '../api';
 
 function InputWithHistory({
@@ -201,66 +202,257 @@ export default function Login({ onLogin }) {
   };
 
   return (
-    <div className="container hero py-4">
-      <div className="row justify-content-center">
-        <div className="col-12 col-md-6">
-          <div className="card p-4 shadow-sm">
-            <h3 className="mb-3">Welcome back</h3>
+    <div className="auth-page">
+      {/* Animated Background */}
+      <div className="auth-background">
+        <div className="floating-shapes">
+          <motion.div
+            className="shape shape-1"
+            animate={{
+              y: [0, -20, 0],
+              rotate: [0, 180, 360]
+            }}
+            transition={{
+              duration: 8,
+              repeat: Infinity,
+              ease: "easeInOut"
+            }}
+          />
+          <motion.div
+            className="shape shape-2"
+            animate={{
+              y: [0, 30, 0],
+              x: [0, -15, 0]
+            }}
+            transition={{
+              duration: 6,
+              repeat: Infinity,
+              ease: "easeInOut",
+              delay: 1
+            }}
+          />
+          <motion.div
+            className="shape shape-3"
+            animate={{
+              scale: [1, 1.2, 1],
+              rotate: [0, -180, -360]
+            }}
+            transition={{
+              duration: 10,
+              repeat: Infinity,
+              ease: "easeInOut",
+              delay: 2
+            }}
+          />
+        </div>
+      </div>
 
-            <form onSubmit={submit} noValidate>
-              <div className="mb-3">
-                <label htmlFor="login-email" className="form-label">Email</label>
-                <div ref={emailRef}>
-                  <InputWithHistory
-                    id="login-email"
-                    value={email}
-                    onChange={(v) => { setEmail(v); setError(''); }}
-                    placeholder="you@example.com"
-                    storageKey="auth_email_history"
-                    examples={['demo@mydiary.com', 'me@personal.com']}
-                    invalid={false}
-                  />
-                </div>
-              </div>
-
-              <div className="mb-3">
-                <label htmlFor="login-password" className="form-label">Password</label>
-                <input
-                  id="login-password"
-                  type="password"
-                  className="form-control"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Your password"
-                />
-              </div>
-
-              {error && <div className="alert alert-danger py-2">{error}</div>}
-
-              <button
-                className="btn btn-primary w-100 d-flex justify-content-center align-items-center"
-                disabled={loading}
-                type="submit"
+      <div className="container-fluid min-vh-100 d-flex align-items-center justify-content-center p-4">
+        <div className="row w-100 justify-content-center">
+          {/* Left Side - Welcome Content */}
+          <motion.div
+            className="col-lg-6 d-none d-lg-flex align-items-center justify-content-center"
+            initial={{ opacity: 0, x: -50 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.8 }}
+          >
+            <div className="welcome-content text-center">
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ delay: 0.3, type: "spring", stiffness: 200 }}
               >
-                {loading ? (
-                  <>
-                    <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                    Logging in...
-                  </>
-                ) : 'Login'}
-              </button>
-            </form>
+                <div className="welcome-icon mb-4">
+                  <i className="bi bi-journal-bookmark-fill display-1 text-primary"></i>
+                </div>
+              </motion.div>
 
-            <div className="text-center mt-3">
-              <small className="text-muted">
-                No account? <Link to="/signup">Create one</Link>
-              </small>
-            </div>
+              <motion.h1
+                className="display-4 fw-bold mb-3 gradient-text"
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5 }}
+              >
+                Welcome Back
+              </motion.h1>
 
-            <div className="mt-3 text-muted small">
-              Tip: click an example to fill your email, or use the dropdown to choose from previous entries.
+              <motion.p
+                className="lead mb-4 text-muted"
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.7 }}
+              >
+                Continue your journey of self-discovery and reflection.
+                Your thoughts, memories, and dreams await.
+              </motion.p>
+
+              <motion.div
+                className="features-list"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.9 }}
+              >
+                <div className="row g-3">
+                  <div className="col-6">
+                    <div className="feature-item">
+                      <i className="bi bi-shield-check text-success me-2"></i>
+                      Secure & Private
+                    </div>
+                  </div>
+                  <div className="col-6">
+                    <div className="feature-item">
+                      <i className="bi bi-lightning text-warning me-2"></i>
+                      Lightning Fast
+                    </div>
+                  </div>
+                  <div className="col-6">
+                    <div className="feature-item">
+                      <i className="bi bi-cloud text-info me-2"></i>
+                      Cloud Sync
+                    </div>
+                  </div>
+                  <div className="col-6">
+                    <div className="feature-item">
+                      <i className="bi bi-heart text-danger me-2"></i>
+                      Made with Love
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
             </div>
-          </div>
+          </motion.div>
+
+          {/* Right Side - Login Form */}
+          <motion.div
+            className="col-12 col-lg-6 d-flex align-items-center justify-content-center"
+            initial={{ opacity: 0, x: 50 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+          >
+            <div className="auth-card">
+              <motion.div
+                className="card-header text-center"
+                initial={{ y: -20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.4 }}
+              >
+                <div className="auth-icon mb-3">
+                  <i className="bi bi-box-arrow-in-right display-6 text-primary"></i>
+                </div>
+                <h2 className="h4 mb-1">Sign In to Your Account</h2>
+                <p className="text-muted small">Access your personal diary</p>
+              </motion.div>
+
+              <motion.div
+                className="card-body"
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.6 }}
+              >
+                <form onSubmit={submit} noValidate>
+                  <div className="mb-4">
+                    <label htmlFor="login-email" className="form-label fw-semibold">
+                      <i className="bi bi-envelope me-2 text-primary"></i>
+                      Email Address
+                    </label>
+                    <div ref={emailRef} className="input-group">
+                      <span className="input-group-text">
+                        <i className="bi bi-at"></i>
+                      </span>
+                      <InputWithHistory
+                        id="login-email"
+                        value={email}
+                        onChange={(v) => { setEmail(v); setError(''); }}
+                        placeholder="Enter your email"
+                        storageKey="auth_email_history"
+                        examples={['demo@mydiary.com', 'me@personal.com']}
+                        invalid={false}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="mb-4">
+                    <label htmlFor="login-password" className="form-label fw-semibold">
+                      <i className="bi bi-lock me-2 text-primary"></i>
+                      Password
+                    </label>
+                    <div className="input-group">
+                      <span className="input-group-text">
+                        <i className="bi bi-key"></i>
+                      </span>
+                      <input
+                        id="login-password"
+                        type="password"
+                        className="form-control"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        placeholder="Enter your password"
+                      />
+                    </div>
+                  </div>
+
+                  {error && (
+                    <motion.div
+                      className="alert alert-danger d-flex align-items-center"
+                      initial={{ scale: 0.9, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                    >
+                      <i className="bi bi-exclamation-triangle me-2"></i>
+                      {error}
+                    </motion.div>
+                  )}
+
+                  <motion.button
+                    className="btn btn-primary w-100 d-flex justify-content-center align-items-center py-3 fw-semibold"
+                    disabled={loading}
+                    type="submit"
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    {loading ? (
+                      <>
+                        <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                        Signing you in...
+                      </>
+                    ) : (
+                      <>
+                        <i className="bi bi-box-arrow-in-right me-2"></i>
+                        Sign In
+                      </>
+                    )}
+                  </motion.button>
+                </form>
+
+                <motion.div
+                  className="text-center mt-4"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.8 }}
+                >
+                  <p className="text-muted mb-2">Don't have an account?</p>
+                  <Link
+                    to="/signup"
+                    className="btn btn-outline-primary d-inline-flex align-items-center"
+                  >
+                    <i className="bi bi-person-plus me-2"></i>
+                    Create Account
+                  </Link>
+                </motion.div>
+
+                <motion.div
+                  className="text-center mt-3"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 1.0 }}
+                >
+                  <small className="text-muted">
+                    <i className="bi bi-lightbulb me-1"></i>
+                    Pro tip: Use the dropdown to select from previous emails
+                  </small>
+                </motion.div>
+              </motion.div>
+            </div>
+          </motion.div>
         </div>
       </div>
     </div>
