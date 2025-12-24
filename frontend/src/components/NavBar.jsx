@@ -7,26 +7,28 @@ import { useTheme } from "../contexts/ThemeContext";
 export default function Navbar() {
   const navigate = useNavigate();
   const location = useLocation();
-  const [loggedIn, setLoggedIn] = useState(false);
-  const [user, setUser] = useState(null);
-  const { isDarkMode, toggleTheme } = useTheme();
 
-  useEffect(() => {
-    const token = localStorage.getItem("mydiary_token");
-    const userData = localStorage.getItem("mydiary_user");
-    setLoggedIn(!!token);
-    if (userData) {
-      setUser(JSON.parse(userData));
-    }
-  }, [location.pathname]);
+  const { isDarkMode, toggleTheme } = useTheme();
+  const token = localStorage.getItem("mydiary_token");
+const user = JSON.parse(localStorage.getItem("mydiary_user") || "null");
+const loggedIn = !!token;
+
+
+  // useEffect(() => {
+  //   const token = localStorage.getItem("mydiary_token");
+  //   const userData = localStorage.getItem("mydiary_user");
+  //   setLoggedIn(!!token);
+  //   if (userData) {
+  //     setUser(JSON.parse(userData));
+  //   }
+  // }, []);
 
   const handleLogout = () => {
-    localStorage.removeItem("mydiary_token");
-    localStorage.removeItem("mydiary_user");
-    setLoggedIn(false);
-    setUser(null);
-    navigate("/login");
-  };
+  localStorage.removeItem("mydiary_token");
+  localStorage.removeItem("mydiary_user");
+  navigate("/login", { replace: true });
+  window.location.reload(); // Ensure state is reset
+};
 
   const isActive = (path) => location.pathname === path;
 

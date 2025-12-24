@@ -70,17 +70,22 @@ router.put('/update/:id', auth, async (req, res) => {
 // Delete entry (protected)
 router.delete('/delete/:id', auth, async (req, res) => {
   try {
-    const entry = await Personal.findById(req.params.id);
-    if (!entry) return res.status(404).json({ error: 'Entry not found' });
-    if (entry.userId.toString() !== req.user.id) return res.status(403).json({ error: 'Access denied' });
+    const entry = await Personal.findOneAndDelete({
+      _id: req.params.id,
+      userId: req.user.id,
+    });
 
-    await entry.remove();
-    res.json({ message: 'Entry deleted' });
+    if (!entry) {
+      return res.status(404).json({ error: 'Entry not found or access denied' });
+    }
+
+    res.json({ message: 'Entry deleted successfully' });
   } catch (err) {
     console.error('Delete personal entry error:', err);
     res.status(500).json({ error: 'Server error' });
   }
 });
+
 
 // Get entries by date (yyyy-mm-dd) (protected)
 router.get('/date/:date', auth, async (req, res) => {

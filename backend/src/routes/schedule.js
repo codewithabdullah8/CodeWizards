@@ -4,6 +4,8 @@ const router = express.Router();
 const Schedule = require('../models/Schedule');
 const auth = require('../middleware/auth');
 
+
+
 // Create new schedule item (protected)
 router.post('/new', auth, async (req, res) => {
   try {
@@ -70,12 +72,16 @@ router.put('/update/:id', auth, async (req, res) => {
 // Delete schedule item (protected)
 router.delete('/delete/:id', auth, async (req, res) => {
   try {
-    const item = await Schedule.findById(req.params.id);
-    if (!item) return res.status(404).json({ error: 'Item not found' });
-    if (item.userId.toString() !== req.user.id) return res.status(403).json({ error: 'Access denied' });
+    const item = await Schedule.findOneAndDelete({
+      _id: req.params.id,
+      userId: req.user.id,
+    });
 
-    await item.remove();
-    res.json({ message: 'Item deleted' });
+    if (!item) {
+      return res.status(404).json({ error: 'Item not found or access denied' });
+    }
+
+    res.json({ message: 'Item deleted successfully' });
   } catch (err) {
     console.error('Delete schedule item error:', err);
     res.status(500).json({ error: 'Server error' });
@@ -117,4 +123,4 @@ router.patch('/complete/:id', auth, async (req, res) => {
   }
 });
 
-module.exports = router;
+module.exports = router;  

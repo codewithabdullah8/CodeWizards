@@ -6,6 +6,10 @@ export default function Personal() {
   const [entries, setEntries] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [showCreate, setShowCreate] = useState(false);
+  const [selectedEntry, setSelectedEntry] = useState(null);
+
+
 
   useEffect(() => {
     fetchEntries();
@@ -40,9 +44,99 @@ export default function Personal() {
       <div className="row justify-content-center">
         <div className="col-12 col-md-8">
           <h2>Personal Diary</h2>
-          <Link to="/personal/new" className="btn btn-primary mb-3">+ New Entry</Link>
+          {selectedEntry && (
+  <div className="card mb-3">
+    <div className="card-body">
+      <h5 className="card-title">{selectedEntry.title}</h5>
+      <p className="card-text">{selectedEntry.content}</p>
+
+      <button
+        className="btn btn-secondary btn-sm"
+        onClick={() => setSelectedEntry(null)}
+      >
+        Close
+      </button>
+    </div>
+  </div>
+)}
+
+          {showCreate && (
+  <div className="card p-3 mb-3">
+    <h5>Create New Entry</h5>
+
+    <form
+      onSubmit={async (e) => {
+        e.preventDefault();
+
+        const form = e.target;
+        const payload = {
+          title: form.title.value,
+          content: form.content.value,
+        };
+
+        try {
+          const { data } = await PersonalAPI.createEntry(payload);
+          setEntries([data, ...entries]);
+          setShowCreate(false);
+          form.reset();
+        } catch (err) {
+          alert("Failed to create entry");
+        }
+      }}
+    >
+      <div className="mb-2">
+        <input
+          name="title"
+          className="form-control"
+          placeholder="Title"
+          required
+        />
+      </div>
+
+      <div className="mb-2">
+        <textarea
+          name="content"
+          className="form-control"
+          placeholder="Write your entry..."
+          rows="4"
+          required
+        />
+      </div>
+
+      <div className="d-flex gap-2">
+        <button className="btn btn-success" type="submit">
+          Save
+        </button>
+        <button
+          type="button"
+          className="btn btn-secondary"
+          onClick={() => setShowCreate(false)}
+        >
+          Cancel
+        </button>
+      </div>
+    </form>
+  </div>
+)}
+
+          <button
+  className="btn btn-primary mb-3"
+  onClick={() => setShowCreate(true)}
+>
+  + New Entry
+</button>
+
           {entries.length === 0 ? (
-            <p>No entries yet. <Link to="/personal/new">Create your first entry</Link>.</p>
+            <p>
+  No entries yet.{" "}
+  <button
+    className="btn btn-link p-0"
+    onClick={() => setShowCreate(true)}
+  >
+    Create your first entry
+  </button>.
+</p>
+
           ) : (
             <div className="list-group">
               {entries.map(entry => (
@@ -51,7 +145,14 @@ export default function Personal() {
                   <p>{entry.content.substring(0, 100)}...</p>
                   <small className="text-muted">{new Date(entry.date).toLocaleDateString()}</small>
                   <div className="mt-2">
-                    <Link to={`/personal/view/${entry._id}`} className="btn btn-sm btn-outline-primary">View</Link>
+                   <button
+  className="btn btn-sm btn-outline-primary"
+   onClick={() => setSelectedEntry(entry)}
+>
+  View
+</button>
+
+
                     <button onClick={() => deleteEntry(entry._id)} className="btn btn-sm btn-outline-danger ms-2">Delete</button>
                   </div>
                 </div>

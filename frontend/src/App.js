@@ -19,12 +19,22 @@ import DiaryEntry from "./pages/DiaryEntry";
 import Personal from "./pages/Personal";
 import ProfessionalHome from "./pages/ProfessionalDiary/Home";
 import Schedule from "./pages/Schedule";
+import ProfessionalNewEntry from "./pages/ProfessionalDiary/NewEntry";
+import ProfessionalViewEntry from "./pages/ProfessionalDiary/ViewEntry";
+
 
 // ✅ Protected route wrapper
 function Protected({ children }) {
   const token = localStorage.getItem("mydiary_token");
-  return token ? children : <Navigate to="/login" replace />;
+  const storedUser = localStorage.getItem("mydiary_user");
+
+  if (!token || !storedUser) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return children;
 }
+
 
 export default function App() {
   const [user, setUser] = useState(() => {
@@ -65,10 +75,10 @@ export default function App() {
     <ToastProvider>
       <ThemeProvider>
       {/* Navbar always visible */}
-      <NavBar user={user} onLogout={handleLogout} />
+     {user && <NavBar user={user} onLogout={handleLogout} />}         
 
       <Routes>
-        {/* Dashboard */}
+        {/* Dashboard */} 
         <Route
           path="/"
           element={
@@ -142,6 +152,34 @@ export default function App() {
             />
           }
         />
+        {/* Professional Diary */}
+<Route
+  path="/professional"
+  element={
+    <Protected>
+      <ProfessionalHome />
+    </Protected>
+  }
+/>
+
+<Route
+  path="/professional/new"
+  element={
+    <Protected>
+      <ProfessionalNewEntry />
+    </Protected>
+  }
+/>
+
+<Route
+  path="/professional/entry/:id"
+  element={
+    <Protected>
+      <ProfessionalViewEntry />
+    </Protected>
+  }
+/>
+
 
         {/* Catch-all (keep LAST) */}
         <Route path="*" element={<Navigate to="/" replace />} />

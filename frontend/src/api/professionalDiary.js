@@ -17,7 +17,10 @@ const ProAPI = {
   // get all entries
   getEntries: () => API.get("/all"),
 
-  // get single entry
+  // ✅ get single entry (MAIN)
+  getOne: (id) => API.get(`/entry/${id}`),
+
+  // (optional alias, safe to keep)
   getEntryById: (id) => API.get(`/entry/${id}`),
 
   // create
