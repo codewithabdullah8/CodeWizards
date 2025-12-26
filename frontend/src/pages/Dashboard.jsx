@@ -3,7 +3,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useToast } from '../contexts/ToastContext';
 import { EntrySkeleton } from '../components/Skeleton';
 import API from '../api';
@@ -168,405 +168,521 @@ export default function Dashboard() {
 
   return (
     <motion.div 
-      className="container py-4"
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
+      className="container py-5"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.6 }}
     >
-      <div className="row g-4">
-        <div className="col-12">
+      <div className="row justify-content-center">
+        <div className="col-12 col-lg-10 col-xl-12">
           <motion.div 
-            className="d-flex justify-content-between align-items-center mb-3"
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.2 }}
+            className="text-center mb-5"
+            initial={{ y: -20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.2, duration: 0.5 }}
           >
-            <h2 className="mb-0">Dashboard</h2>
-            <div>
-              <button
-                className="btn btn-outline-secondary me-2"
-                onClick={() => {
-                  // toggle inline create form
-                  setCreating(c => !c);
-                  if (!creating) window.scrollTo({ top: 0, behavior: 'smooth' });
-                }}
-              >
-                {creating ? 'Close' : '+ New Entry'}
-              </button>
-              <button className="btn btn-outline-secondary" onClick={() => window.location.reload()}>
-                Refresh
-              </button>
-            </div>
+            <h1 className="page-header display-4 mb-3">
+              <i className="bi bi-house-door me-3"></i>
+              Dashboard
+            </h1>
+            <p className="text-muted fs-5">Your personal diary overview and quick actions</p>
           </motion.div>
-        </div>
 
-        {/* Inline create form */}
-        {creating && (
-          <div className="col-12">
-            <motion.div 
-              className="card p-3 mb-3"
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.3 }}
+          <motion.div 
+            className="d-flex justify-content-center mb-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.4, duration: 0.5 }}
+          >
+            <motion.button
+              className="btn btn-primary btn-lg px-5 py-3"
+              onClick={() => {
+                setCreating(c => !c);
+                if (!creating) window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
             >
-              <h5 className="mb-2">Create new entry</h5>
+              <i className="bi bi-plus-circle me-2 fs-5"></i>
+              {creating ? 'Close Form' : 'Create New Entry'}
+            </motion.button>
+          </motion.div>
 
-              <form onSubmit={handleCreateSubmit}>
-                <div className="mb-3">
-                  <label htmlFor="create-title" className="form-label">Title</label>
-                  <input
-                    id="create-title"
-                    className="form-control"
-                    value={createTitle}
-                    onChange={(e) => setCreateTitle(e.target.value)}
-                    placeholder="Entry title"
-                    autoComplete="off"
-                  />
-                  <div className="mt-2 d-flex flex-wrap gap-2">
-                    {/* small example chips */}
-                    {['Morning reflection', 'Gratitude', 'Work notes'].map((ex, i) => (
-                      <button
-                        type="button"
-                        key={i}
-                        className="btn btn-sm btn-outline-secondary me-2 mb-2"
-                        onClick={() => setCreateTitle(ex)}
-                      >
-                        {ex}
-                      </button>
-                    ))}
-                    <button
-                      type="button"
-                      className="btn btn-sm btn-outline-primary mb-2"
-                      onClick={() => {
-                        // save current title to quick titles
-                        if (createTitle.trim()) saveQuickTitleLocally(createTitle.trim());
-                      }}
-                    >
-                      Save title
-                    </button>
-                  </div>
-                </div>
-
-                <div className="mb-3">
-                  <label htmlFor="create-content" className="form-label">Content</label>
-                  <textarea
-                    id="create-content"
-                    rows={6}
-                    className="form-control"
-                    value={createContent}
-                    onChange={(e) => setCreateContent(e.target.value)}
-                    placeholder="Write your entry..."
-                  />
-                  <div className="mt-2 d-flex flex-wrap gap-2">
-                    {['Today I felt grateful for...', 'Short note: ...'].map((ex, i) => (
-                      <button
-                        type="button"
-                        key={i}
-                        className="btn btn-sm btn-outline-secondary me-2 mb-2"
-                        onClick={() => setCreateContent(ex)}
-                      >
-                        {ex}
-                      </button>
-                    ))}
-                    <button
-                      type="button"
-                      className="btn btn-sm btn-outline-secondary mb-2"
-                      onClick={() => setCreateContent('')}
-                    >
-                      Clear
-                    </button>
-                  </div>
-                </div>
-
-                <div className="mb-3">
-                  <label htmlFor="create-music" className="form-label">Ambient music</label>
-                  <select
-                    id="create-music"
-                    className="form-select"
-                    value={createMusic}
-                    onChange={(e) => setCreateMusic(e.target.value)}
-                  >
-                    <option value="none">None</option>
-                    <option value="calm">Calm</option>
-                    <option value="focus">Focus</option>
-                    <option value="rain">Rain</option>
-                  </select>
-                </div>
-
-                {createError && (
-                  <div className="alert alert-danger">
-                    {createError}
-                  </div>
-                )}
-
-                <div className="d-flex gap-2">
-                  <button className="btn btn-primary" disabled={creatingSaving} type="submit">
-                    {creatingSaving ? (
-                      <>
-                        <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                        Creating...
-                      </>
-                    ) : 'Create Entry'}
-                  </button>
-
+          {/* Inline create form */}
+          <AnimatePresence>
+            {creating && (
+              <motion.div 
+                className="create-form mb-5"
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.3 }}
+              >
+                <div className="d-flex justify-content-between align-items-center mb-4">
+                  <h4 className="mb-0 text-primary">
+                    <i className="bi bi-pencil-square me-2"></i>
+                    Create New Diary Entry
+                  </h4>
                   <button
-                    type="button"
-                    className="btn btn-outline-secondary"
-                    onClick={() => {
-                      setCreating(false);
-                    }}
+                    className="icon-btn btn btn-outline-secondary"
+                    onClick={() => setCreating(false)}
+                    title="Close form"
                   >
-                    Cancel
+                    <i className="bi bi-x"></i>
                   </button>
                 </div>
-              </form>
-            </motion.div>
-          </div>
-        )}
 
-        {/* Recent entries (main column) */}
-        <div className="col-lg-8">
-          <motion.div
-            className="card p-3 h-100"
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.4 }}
-          >
-            <div className="d-flex align-items-center justify-content-between mb-4">
-              <div className="d-flex align-items-center">
-                <i className="bi bi-journal-text text-primary me-2"></i>
-                <h5 className="mb-0 fw-bold">Recent Entries</h5>
-                <span className="badge bg-primary ms-2 rounded-pill">{filteredEntries.length}</span>
-              </div>
-              <div style={{ minWidth: 220 }}>
-                <div className="input-group input-group-sm">
-                  <span className="input-group-text bg-light border-end-0">
-                    <i className="bi bi-search"></i>
-                  </span>
-                  <input
-                    className="form-control border-start-0"
-                    placeholder="Search entries..."
-                    value={query}
-                    onChange={e => setQuery(e.target.value)}
-                  />
-                </div>
-              </div>
-            </div>
+                <form onSubmit={handleCreateSubmit}>
+                  <div className="row g-4">
+                    <div className="col-md-8">
+                      <label htmlFor="create-title" className="form-label fw-bold">
+                        <i className="bi bi-tag me-2"></i>
+                        Entry Title <span className="text-danger">*</span>
+                      </label>
+                      <input
+                        id="create-title"
+                        className="form-control form-control-lg"
+                        value={createTitle}
+                        onChange={(e) => setCreateTitle(e.target.value)}
+                        placeholder="Give your entry a meaningful title..."
+                        autoComplete="off"
+                        required
+                      />
+                      <div className="mt-3 d-flex flex-wrap gap-2">
+                        {['Morning reflection', 'Gratitude', 'Work notes', 'Evening thoughts'].map((ex, i) => (
+                          <motion.button
+                            type="button"
+                            key={i}
+                            className="btn btn-sm btn-outline-secondary"
+                            onClick={() => setCreateTitle(ex)}
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                          >
+                            {ex}
+                          </motion.button>
+                        ))}
+                        <motion.button
+                          type="button"
+                          className="btn btn-sm btn-outline-primary"
+                          onClick={() => {
+                            if (createTitle.trim()) saveQuickTitleLocally(createTitle.trim());
+                          }}
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                        >
+                          <i className="bi bi-star me-1"></i>
+                          Save Title
+                        </motion.button>
+                      </div>
+                    </div>
 
-            {loadingEntries ? (
-              <div className="row g-3">
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <div key={i} className="col-12">
-                    <EntrySkeleton />
+                    <div className="col-md-4">
+                      <label htmlFor="create-music" className="form-label fw-bold">
+                        <i className="bi bi-music-note me-2"></i>
+                        Ambient Music
+                      </label>
+                      <select
+                        id="create-music"
+                        className="form-select form-select-lg"
+                        value={createMusic}
+                        onChange={(e) => setCreateMusic(e.target.value)}
+                      >
+                        <option value="none">No Music</option>
+                        <option value="calm">🌊 Calm Ocean</option>
+                        <option value="focus">🎯 Deep Focus</option>
+                        <option value="rain">🌧️ Gentle Rain</option>
+                        <option value="nature">🌿 Forest Sounds</option>
+                      </select>
+                    </div>
                   </div>
-                ))}
-              </div>
-            ) : error ? (
-              <motion.div
-                className="alert alert-warning d-flex align-items-center"
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-              >
-                <i className="bi bi-exclamation-triangle me-2"></i>
-                {error}
-              </motion.div>
-            ) : filteredEntries.length === 0 ? (
-              <motion.div
-                className="text-center py-5"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.6 }}
-              >
-                <i className="bi bi-journal-x text-muted" style={{ fontSize: '3rem' }}></i>
-                <h6 className="text-muted mt-3">No entries found</h6>
-                <p className="text-muted small">Create your first diary entry to get started!</p>
-              </motion.div>
-            ) : (
-              <div className="row g-3">
-                {filteredEntries.map((it, index) => (
-                  <motion.div
-                    key={it._id || it.id || it.createdAt}
-                    className="col-12"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.5 + index * 0.1 }}
-                    whileHover={{ scale: 1.01 }}
-                    whileTap={{ scale: 0.99 }}
-                  >
-                    <div
-                      className="recent-entry-card p-3 rounded-3 border cursor-pointer"
-                      onClick={() => navigate(`/entry/${it._id || it.id}`)}
-                      style={{
-                        background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
-                        border: '1px solid #e9ecef',
-                        transition: 'all 0.3s ease',
-                        cursor: 'pointer'
-                      }}
+
+                  <div className="mt-4">
+                    <label htmlFor="create-content" className="form-label fw-bold">
+                      <i className="bi bi-journal-text me-2"></i>
+                      Your Thoughts <span className="text-danger">*</span>
+                    </label>
+                    <textarea
+                      id="create-content"
+                      rows={8}
+                      className="form-control"
+                      value={createContent}
+                      onChange={(e) => setCreateContent(e.target.value)}
+                      placeholder="Write your diary entry here... What happened today? How do you feel? What are you grateful for?"
+                      required
+                    />
+                    <div className="mt-3 d-flex flex-wrap gap-2">
+                      {['Today I felt grateful for...', 'Something important happened:', 'I learned that...'].map((ex, i) => (
+                        <motion.button
+                          type="button"
+                          key={i}
+                          className="btn btn-sm btn-outline-secondary"
+                          onClick={() => setCreateContent(ex)}
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                        >
+                          {ex}
+                        </motion.button>
+                      ))}
+                      <motion.button
+                        type="button"
+                        className="btn btn-sm btn-outline-secondary"
+                        onClick={() => setCreateContent('')}
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                      >
+                        <i className="bi bi-x-circle me-1"></i>
+                        Clear
+                      </motion.button>
+                    </div>
+                  </div>
+
+                  {createError && (
+                    <motion.div 
+                      className="alert alert-danger d-flex align-items-center mt-4"
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ duration: 0.3 }}
                     >
-                      <div className="d-flex justify-content-between align-items-start mb-2">
-                        <div className="flex-grow-1 me-3">
-                          <h6 className="mb-1 fw-semibold text-dark">
-                            <i className="bi bi-file-earmark-text text-primary me-2"></i>
-                            {it.title || '(untitled)'}
-                          </h6>
-                          <p className="text-muted small mb-2 line-clamp-2" style={{
-                            display: '-webkit-box',
-                            WebkitLineClamp: 2,
-                            WebkitBoxOrient: 'vertical',
-                            overflow: 'hidden'
-                          }}>
-                            {(it.content || '').slice(0, 200)}
-                          </p>
-                        </div>
-                        <div className="text-end">
-                          <small className="text-muted d-block">
-                            <i className="bi bi-calendar-event me-1"></i>
-                            {new Date(it.createdAt).toLocaleDateString()}
-                          </small>
-                          <small className="text-muted">
-                            <i className="bi bi-clock me-1"></i>
-                            {new Date(it.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                          </small>
-                        </div>
+                      <i className="bi bi-exclamation-triangle me-3 fs-5"></i>
+                      <div>
+                        <h6 className="mb-1">Please check your input</h6>
+                        <p className="mb-0">{createError}</p>
                       </div>
-                      <div className="d-flex justify-content-between align-items-center">
-                        <div className="d-flex gap-2">
-                          {it.musicKey && (
-                            <span className="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25">
-                              <i className="bi bi-music-note me-1"></i>
-                              {it.musicKey}
-                            </span>
-                          )}
-                          <span className="badge bg-info bg-opacity-10 text-info border border-info border-opacity-25">
-                            <i className="bi bi-eye me-1"></i>
-                            View
-                          </span>
-                        </div>
-                        <i className="bi bi-chevron-right text-muted"></i>
+                    </motion.div>
+                  )}
+
+                  <div className="d-flex gap-3 justify-content-end mt-4">
+                    <motion.button
+                      type="button"
+                      className="btn btn-outline-secondary px-4"
+                      onClick={() => setCreating(false)}
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      <i className="bi bi-x-circle me-2"></i>
+                      Cancel
+                    </motion.button>
+                    <motion.button
+                      className="btn btn-primary px-4 d-flex align-items-center"
+                      disabled={creatingSaving || !createTitle.trim() || !createContent.trim()}
+                      type="submit"
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      {creatingSaving ? (
+                        <>
+                          <div className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></div>
+                          Creating Entry...
+                        </>
+                      ) : (
+                        <>
+                          <i className="bi bi-check-circle me-2"></i>
+                          Save Entry
+                        </>
+                      )}
+                    </motion.button>
+                  </div>
+                </form>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          <div className="row g-4">
+            {/* Recent entries (main column) */}
+            <div className="col-lg-8">
+              <motion.div
+                className="card professional-card h-100"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.6, duration: 0.5 }}
+              >
+                <div className="card-body p-4">
+                  <div className="d-flex align-items-center justify-content-between mb-4">
+                    <div className="d-flex align-items-center">
+                      <i className="bi bi-journal-text text-primary me-3 fs-4"></i>
+                      <div>
+                        <h4 className="mb-0 fw-bold">Recent Entries</h4>
+                        <p className="text-muted mb-0 small">Your latest diary reflections</p>
+                      </div>
+                      <span className="badge bg-primary ms-3 rounded-pill fs-6">{filteredEntries.length}</span>
+                    </div>
+                    <div style={{ minWidth: 250 }}>
+                      <div className="input-group">
+                        <span className="input-group-text bg-light border-end-0">
+                          <i className="bi bi-search text-primary"></i>
+                        </span>
+                        <input
+                          className="form-control border-start-0"
+                          placeholder="Search your entries..."
+                          value={query}
+                          onChange={e => setQuery(e.target.value)}
+                        />
                       </div>
                     </div>
-                  </motion.div>
-                ))}
-              </div>
-            )}
-          </motion.div>
-        </div>
+                  </div>
 
-        {/* Quick titles (side column) */}
-        <div className="col-lg-4">
-          <motion.div
-            className="card p-3 h-100"
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.6 }}
-          >
-            <div className="d-flex align-items-center justify-content-between mb-3">
-              <div className="d-flex align-items-center">
-                <i className="bi bi-lightning-charge text-warning me-2"></i>
-                <h6 className="mb-0 fw-bold">Quick Titles</h6>
-              </div>
-              <div className="d-flex gap-2">
-                <button
-                  className="btn btn-sm btn-outline-danger"
-                  onClick={clearQuickTitles}
-                  disabled={!quickTitles.length}
-                  data-bs-toggle="tooltip"
-                  data-bs-placement="top"
-                  title="Clear all quick titles"
-                >
-                  <i className="bi bi-trash"></i>
-                </button>
-              </div>
+                  {loadingEntries ? (
+                    <div className="row g-3">
+                      {Array.from({ length: 5 }).map((_, i) => (
+                        <div key={i} className="col-12">
+                          <EntrySkeleton />
+                        </div>
+                      ))}
+                    </div>
+                  ) : error ? (
+                    <motion.div
+                      className="alert alert-warning d-flex align-items-center justify-content-center py-5"
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      <i className="bi bi-exclamation-triangle me-3 fs-3"></i>
+                      <div>
+                        <h5 className="mb-1">Unable to Load Entries</h5>
+                        <p className="mb-0">{error}</p>
+                      </div>
+                    </motion.div>
+                  ) : filteredEntries.length === 0 ? (
+                    <motion.div
+                      className="text-center py-5"
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.8, duration: 0.5 }}
+                    >
+                      <div className="mb-4">
+                        <i className="bi bi-journal-x display-1 text-muted"></i>
+                      </div>
+                      <h4 className="text-muted mb-3">No entries found</h4>
+                      <p className="text-muted mb-4 fs-5">
+                        {query.trim() ? 'Try adjusting your search terms' : 'Start your diary journey by creating your first entry'}
+                      </p>
+                      <motion.button
+                        className="btn btn-primary btn-lg px-5 py-3"
+                        onClick={() => {
+                          setCreating(true);
+                          window.scrollTo({ top: 0, behavior: 'smooth' });
+                        }}
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                      >
+                        <i className="bi bi-plus-circle me-2"></i>
+                        Create Your First Entry
+                      </motion.button>
+                    </motion.div>
+                  ) : (
+                    <motion.div 
+                      className="row g-3"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: 0.8, duration: 0.5 }}
+                    >
+                      {filteredEntries.map((it, index) => (
+                        <motion.div
+                          key={it._id || it.id || it.createdAt}
+                          className="col-12"
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.9 + index * 0.1, duration: 0.4 }}
+                          whileHover={{ scale: 1.01 }}
+                          whileTap={{ scale: 0.99 }}
+                        >
+                          <div
+                            className="diary-entry-card p-4 cursor-pointer h-100"
+                            onClick={() => navigate(`/entry/${it._id || it.id}`)}
+                          >
+                            <div className="d-flex justify-content-between align-items-start mb-3">
+                              <div className="flex-grow-1 me-3">
+                                <h5 className="mb-2 fw-bold text-primary">
+                                  <i className="bi bi-file-earmark-text me-2"></i>
+                                  {it.title || '(untitled)'}
+                                </h5>
+                                <p className="text-muted mb-3" style={{
+                                  display: '-webkit-box',
+                                  WebkitLineClamp: 3,
+                                  WebkitBoxOrient: 'vertical',
+                                  overflow: 'hidden',
+                                  lineHeight: '1.6'
+                                }}>
+                                  {(it.content || '').slice(0, 250)}
+                                </p>
+                              </div>
+                              <div className="text-end">
+                                <div className="mb-2">
+                                  <small className="text-muted d-block">
+                                    <i className="bi bi-calendar-event me-1"></i>
+                                    {new Date(it.createdAt).toLocaleDateString('en-US', {
+                                      weekday: 'short',
+                                      month: 'short',
+                                      day: 'numeric'
+                                    })}
+                                  </small>
+                                  <small className="text-muted">
+                                    <i className="bi bi-clock me-1"></i>
+                                    {new Date(it.createdAt).toLocaleTimeString([], { 
+                                      hour: '2-digit', 
+                                      minute: '2-digit' 
+                                    })}
+                                  </small>
+                                </div>
+                              </div>
+                            </div>
+                            <div className="d-flex justify-content-between align-items-center">
+                              <div className="d-flex gap-2 flex-wrap">
+                                {it.musicKey && it.musicKey !== 'none' && (
+                                  <span className="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-3 py-2">
+                                    <i className="bi bi-music-note me-1"></i>
+                                    {it.musicKey === 'calm' ? '🌊 Calm' : 
+                                     it.musicKey === 'focus' ? '🎯 Focus' : 
+                                     it.musicKey === 'rain' ? '🌧️ Rain' : 
+                                     it.musicKey === 'nature' ? '🌿 Nature' : it.musicKey}
+                                  </span>
+                                )}
+                                <span className="badge bg-info bg-opacity-10 text-info border border-info border-opacity-25 px-3 py-2">
+                                  <i className="bi bi-eye me-1"></i>
+                                  View Entry
+                                </span>
+                              </div>
+                              <i className="bi bi-chevron-right text-primary fs-5"></i>
+                            </div>
+                          </div>
+                        </motion.div>
+                      ))}
+                    </motion.div>
+                  )}
+                </div>
+              </motion.div>
             </div>
 
-            {quickTitles.length === 0 ? (
+            {/* Quick titles (side column) */}
+            <div className="col-lg-4">
               <motion.div
-                className="text-center py-4"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.8 }}
+                className="card professional-card h-100"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.7, duration: 0.5 }}
               >
-                <i className="bi bi-journal-plus text-muted" style={{ fontSize: '2rem' }}></i>
-                <div className="text-muted mt-2 small">No saved titles yet</div>
-                <div className="text-muted small">Save titles while creating entries to add quick access</div>
-              </motion.div>
-            ) : (
-              <motion.div
-                className="d-flex flex-column gap-2"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.8 }}
-              >
-                {quickTitles.map((t, idx) => (
-                  <motion.div
-                    key={idx}
-                    className="quick-title-item"
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.8 + idx * 0.1 }}
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                  >
-                    <div className="d-flex align-items-center justify-content-between p-2 rounded-3 border"
-                         style={{
-                           background: 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)',
-                           border: '1px solid #dee2e6',
-                           transition: 'all 0.2s ease'
-                         }}>
-                      <button
-                        className="btn btn-sm text-start flex-grow-1 p-0 border-0 bg-transparent text-dark fw-medium"
-                        onClick={() => handleCreateFromQuick(t)}
-                        title="Create a new entry with this title"
-                        style={{
-                          whiteSpace: 'nowrap',
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          fontSize: '0.875rem'
-                        }}
-                      >
-                        <i className="bi bi-plus-circle text-primary me-2"></i>
-                        {t}
-                      </button>
+                <div className="card-body p-4">
+                  <div className="d-flex align-items-center justify-content-between mb-4">
+                    <div className="d-flex align-items-center">
+                      <i className="bi bi-lightning-charge text-warning me-3 fs-4"></i>
+                      <div>
+                        <h4 className="mb-0 fw-bold">Quick Titles</h4>
+                        <p className="text-muted mb-0 small">Saved titles for quick entry creation</p>
+                      </div>
+                    </div>
+                    <motion.button
+                      className="icon-btn btn btn-outline-danger"
+                      onClick={clearQuickTitles}
+                      disabled={!quickTitles.length}
+                      title="Clear all quick titles"
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.9 }}
+                    >
+                      <i className="bi bi-trash"></i>
+                    </motion.button>
+                  </div>
 
-                      <button
-                        className="btn btn-sm btn-outline-danger ms-2 rounded-circle p-1"
-                        title="Remove from quick titles"
-                        onClick={() => removeQuickTitle(t)}
-                        style={{
-                          width: '24px',
-                          height: '24px',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center'
+                  {quickTitles.length === 0 ? (
+                    <motion.div
+                      className="text-center py-5"
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.9, duration: 0.5 }}
+                    >
+                      <div className="mb-4">
+                        <i className="bi bi-journal-plus display-1 text-muted"></i>
+                      </div>
+                      <h5 className="text-muted mb-3">No saved titles yet</h5>
+                      <p className="text-muted mb-4">
+                        Save titles while creating entries to build your quick access list
+                      </p>
+                      <motion.button
+                        className="btn btn-outline-primary"
+                        onClick={() => {
+                          setCreating(true);
+                          window.scrollTo({ top: 0, behavior: 'smooth' });
                         }}
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
                       >
-                        <i className="bi bi-x" style={{ fontSize: '0.75rem' }}></i>
-                      </button>
+                        <i className="bi bi-plus-circle me-2"></i>
+                        Create Entry
+                      </motion.button>
+                    </motion.div>
+                  ) : (
+                    <motion.div
+                      className="d-flex flex-column gap-3"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: 0.9, duration: 0.5 }}
+                    >
+                      {quickTitles.map((t, idx) => (
+                        <motion.div
+                          key={idx}
+                          initial={{ opacity: 0, x: -10 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: 1.0 + idx * 0.1, duration: 0.4 }}
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                        >
+                          <div className="d-flex align-items-center justify-content-between p-3 rounded-3 border quick-title-item">
+                            <motion.button
+                              className="btn text-start flex-grow-1 p-0 border-0 bg-transparent text-dark fw-medium"
+                              onClick={() => handleCreateFromQuick(t)}
+                              title="Create a new entry with this title"
+                              whileHover={{ scale: 1.02 }}
+                              whileTap={{ scale: 0.98 }}
+                            >
+                              <i className="bi bi-plus-circle text-primary me-2"></i>
+                              {t}
+                            </motion.button>
+
+                            <motion.button
+                              className="icon-btn btn btn-outline-danger ms-2"
+                              title="Remove from quick titles"
+                              onClick={() => removeQuickTitle(t)}
+                              whileHover={{ scale: 1.1 }}
+                              whileTap={{ scale: 0.9 }}
+                            >
+                              <i className="bi bi-x"></i>
+                            </motion.button>
+                          </div>
+                        </motion.div>
+                      ))}
+                    </motion.div>
+                  )}
+
+                  <hr className="my-4" />
+
+                  <motion.div
+                    className="mt-3"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 1.2, duration: 0.5 }}
+                  >
+                    <div className="d-flex align-items-center mb-3">
+                      <i className="bi bi-info-circle text-info me-2 fs-5"></i>
+                      <h6 className="mb-0 fw-bold text-primary">How to Use</h6>
+                    </div>
+                    <div className="text-muted small">
+                      <p className="mb-2">
+                        <i className="bi bi-plus-circle text-primary me-2"></i>
+                        Click any title to start a new entry
+                      </p>
+                      <p className="mb-2">
+                        <i className="bi bi-star text-warning me-2"></i>
+                        Save titles from the create form
+                      </p>
+                      <p className="mb-0">
+                        <i className="bi bi-trash text-danger me-2"></i>
+                        Remove titles you no longer need
+                      </p>
                     </div>
                   </motion.div>
-                ))}
+                </div>
               </motion.div>
-            )}
-
-            <hr className="my-3" />
-
-            <motion.div
-              className="mt-2"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 1.0 }}
-            >
-              <div className="d-flex align-items-center mb-2">
-                <i className="bi bi-info-circle text-info me-2"></i>
-                <h6 className="small text-muted mb-0 fw-semibold">How it works</h6>
-              </div>
-              <ul className="small mb-0 text-muted">
-                <li className="mb-1">Click any title to start a new entry</li>
-                <li className="mb-1">Titles are saved from your recent entries</li>
-                <li>Manage titles from the Diary page</li>
-              </ul>
-            </motion.div>
-          </motion.div>
+            </div>
+          </div>
         </div>
       </div>
     </motion.div>
