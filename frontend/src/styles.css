@@ -82,27 +82,6 @@ body {
     margin-bottom: 0.5rem;
 }
 
-.btn-primary {
-    background: var(--gradient-blue-purple);
-    border: none;
-    border-radius: 12px;
-    font-weight: 600;
-    padding: 0.75rem 2rem;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 12px var(--shadow-blue);
-}
-
-.btn-primary:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px var(--shadow-purple);
-    background: var(--gradient-purple-blue);
-}
-
-.form-control:focus {
-    box-shadow: 0 0 0 0.15rem rgba(25, 118, 210, 0.12);
-    border-color: #1976d2;
-}
-
 .recent-chip {
     border-radius: 999px;
     padding: 0.25rem 0.6rem;
@@ -1029,9 +1008,11 @@ html {
 .features-list .feature-item,
 .journey-steps .step-item {
     display: flex;
+    flex-direction: column;
     align-items: center;
-    padding: 8px 0;
-    font-size: 0.9rem;
+    text-align: center;
+    padding: 4px 0;
+    font-size: 0.85rem;
 }
 
 .journey-steps .steps-container {
@@ -1099,7 +1080,7 @@ html {
 .auth-card .card-header {
     background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
     border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-    padding: 2rem 2rem 1.5rem;
+    padding: 1rem 1.5rem 0.75rem;
 }
 
 .dark-mode .auth-card .card-header {
@@ -1108,7 +1089,7 @@ html {
 }
 
 .auth-card .card-body {
-    padding: 2rem;
+    padding: 1.2rem;
 }
 
 .auth-icon {

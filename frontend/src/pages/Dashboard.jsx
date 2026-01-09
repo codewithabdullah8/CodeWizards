@@ -554,7 +554,7 @@ export default function Dashboard() {
             </div>
 
             {/* Quick titles (side column) */}
-            <div className="col-lg-4">
+            <div className="col-lg-4" style={{ position: 'sticky', top: '20px' }}>
               <motion.div
                 className="card professional-card h-100"
                 initial={{ opacity: 0, x: 20 }}
