@@ -21,6 +21,7 @@ import ProfessionalHome from "./pages/ProfessionalDiary/Home";
 import Schedule from "./pages/Schedule";
 import ProfessionalNewEntry from "./pages/ProfessionalDiary/NewEntry";
 import ProfessionalViewEntry from "./pages/ProfessionalDiary/ViewEntry";
+import RecentEntries from "./pages/RecentEntries";
 
 
 // ✅ Protected route wrapper
@@ -94,6 +95,16 @@ export default function App() {
           element={
             <Protected>
               <Personal />
+            </Protected>
+          }
+        />
+
+        {/* Recent Entries */}
+        <Route
+          path="/recent"
+          element={
+            <Protected>
+              <RecentEntries />
             </Protected>
           }
         />
