@@ -195,7 +195,7 @@ export default function App() {
         {/* Catch-all (keep LAST) */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
-    </ThemeProvider>
-  </ToastProvider>
+      </ThemeProvider>
+    </ToastProvider>
   );
 }
