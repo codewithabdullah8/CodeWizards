@@ -67,7 +67,7 @@ export default function Personal() {
         className="alert alert-danger d-flex align-items-center justify-content-center"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
+        transitnpm run ion={{ duration: 0.5 }}
       >
         <i className="bi bi-exclamation-triangle me-3 fs-4"></i>
         <div>

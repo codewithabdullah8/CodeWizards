@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from "react";
+import OAuthSuccess from "./pages/oAuthSuccess";
+
 import {
   Routes,
   Route,
@@ -8,6 +10,7 @@ import {
 
 import NavBar from "./components/NavBar";
 import API from "./api";
+
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { ToastProvider } from "./contexts/ToastContext";
 
@@ -59,7 +62,7 @@ export default function App() {
           console.log("Reminder:", data.message); // Log to console instead
         }
       })
-      .catch(() => {
+      .catch(() => {  
         // silently ignore
       });
   }, [user]);
@@ -152,6 +155,12 @@ export default function App() {
           }
         />
 
+<Route
+  path="/oauth-success"
+  element={<OAuthSuccess onLogin={setUser} />}
+/>
+c
+
         <Route
           path="/signup"
           element={
@@ -190,6 +199,8 @@ export default function App() {
     </Protected>
   }
 />
+
+
 
 
         {/* Catch-all (keep LAST) */}

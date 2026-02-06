@@ -2,7 +2,10 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useToast } from "../contexts/ToastContext";
-import API from "../api";
+// import API from "../api";
+import ReminderAPI from "../api/reminders";
+import QuoteAPI from "../api/quotes";
+
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -15,12 +18,14 @@ export default function Dashboard() {
   const [createError, setCreateError] = useState("");
 
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [selectedDate, setSelectedDate] = useState(new Date().getDate());
+  const selectedDate = currentDate.getDate();
 
   const [quote, setQuote] = useState({
     text: "The best way to predict the future is to create it.",
     author: "Abraham Lincoln",
   });
+
+
 
   const moods = [
     { emoji: "😀", label: "Happy" },
@@ -42,31 +47,38 @@ export default function Dashboard() {
     { day: "sunday", emoji: "😎", label: "Relaxed" },
   ]);
 
-  useEffect(() => {
-    fetchQuote();
-  }, []);
+const loadQuote = async () => {
+  try {
+    const { data } = await QuoteAPI.getToday();
+    setQuote(data);
+  } catch (err) {
+    console.error("Quote error", err);
+  }
+};
 
-  const fetchQuote = async () => {
-    try {
-      const response = await fetch("https://api.quotable.io/random");
-      const data = await response.json();
-      setQuote({
-        text: data.content,
-        author: data.author.split(",")[0],
-      });
-    } catch (err) {
-      // Keep default quote
-    }
-  };
+const [reminder, setReminder] = useState(null);
 
+const loadTodayReminder = async () => {
+  try {
+    const { data } = await ReminderAPI.getToday();
+    setReminder(data);
+  } catch (err) {
+    console.error("Reminder error", err);
+  }
+};
+ useEffect(() => {
+  loadQuote();
+  loadTodayReminder();
+}, []);
   const getDaysInMonth = () => {
     const year = currentDate.getFullYear();
     const month = currentDate.getMonth();
     const firstDay = new Date(year, month, 1).getDay();
+    const mondayStartIndex = (firstDay + 6) % 7;
     const daysInMonth = new Date(year, month + 1, 0).getDate();
 
     const days = [];
-    for (let i = 0; i < firstDay; i++) {
+    for (let i = 0; i < mondayStartIndex; i++) {
       days.push(null);
     }
     for (let i = 1; i <= daysInMonth; i++) {
@@ -88,11 +100,10 @@ export default function Dashboard() {
       setCreateError("Title and content are required");
       return;
     }
-
     setCreatingSaving(true);
 
     try {
-      const res = await API.post("/diary", {
+      const res = await ReminderAPI.post("/diary", {
         title: createTitle,
         content: createContent,
         ...(createMusic !== "none" ? { musicKey: createMusic } : {}),
@@ -150,98 +161,52 @@ export default function Dashboard() {
           {/* LEFT: Calendar */}
           <div className="col-lg-4">
             <motion.div
-              className="card border-0"
-              style={{
-                boxShadow: '0 8px 24px rgba(102, 126, 234, 0.15)',
-                borderRadius: '16px',
-                overflow: 'hidden',
-                background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.95) 100%)'
-              }}
+              className="calendar-widget"
               initial={{ x: -20, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
               transition={{ delay: 0.1, duration: 0.5 }}
             >
-              <div className="card-body p-0" style={{ position: 'relative' }}>
-                {/* Gradient accent bar */}
-                <div style={{
-                  position: 'absolute',
-                  right: 0,
-                  top: 0,
-                  bottom: 0,
-                  width: '4px',
-                  background: 'linear-gradient(180deg, #667eea 0%, #764ba2 100%)',
-                  borderTopRightRadius: '8px',
-                  borderBottomRightRadius: '8px'
-                }}></div>
-
-                {/* Calendar Header */}
-                <div style={{
-                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                  padding: '16px 20px',
-                  color: 'white',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '12px'
-                }}>
-                  <i className="bi bi-calendar3" style={{ fontSize: '20px', opacity: '0.9' }}></i>
-                  <span style={{ fontWeight: '600', fontSize: '14px' }}>Calendar</span>
+              <div className="calendar-widget__header">
+                <span className="calendar-widget__month">{monthName}</span>
+                <div className="calendar-widget__nav">
+                  <button
+                    className="calendar-widget__nav-btn"
+                    onClick={previousMonth}
+                    disabled
+                    aria-disabled="true"
+                    aria-label="Previous month"
+                  >
+                    <i className="bi bi-chevron-left"></i>
+                  </button>
+                  <button
+                    className="calendar-widget__nav-btn"
+                    onClick={nextMonth}
+                    disabled
+                    aria-disabled="true"
+                    aria-label="Next month"
+                  >
+                    <i className="bi bi-chevron-right"></i>
+                  </button>
                 </div>
+              </div>
 
-                {/* Calendar Content */}
-                <div style={{ padding: '20px' }}>
-                  {/* Month Navigation */}
-                  <div className="d-flex align-items-center justify-content-between mb-4">
-                    <button
-                      className="btn btn-link text-muted p-0"
-                      onClick={previousMonth}
-                      style={{ textDecoration: 'none', fontSize: '16px', color: '#667eea' }}
-                    >
-                      <i className="bi bi-chevron-left"></i>
-                    </button>
-                    <span style={{ color: '#1e293b', fontSize: '15px', fontWeight: '600', minWidth: '120px', textAlign: 'center' }}>{monthName}</span>
-                    <button
-                      className="btn btn-link text-muted p-0"
-                      onClick={nextMonth}
-                      style={{ textDecoration: 'none', fontSize: '16px', color: '#667eea' }}
-                    >
-                      <i className="bi bi-chevron-right"></i>
-                    </button>
+              <div className="calendar-widget__grid">
+                {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day, i) => (
+                  <div key={i} className="calendar-widget__weekday">
+                    {day}
                   </div>
+                ))}
 
-                  {/* Calendar Label Card */}
-                  <div className="calendar-label-card mb-3" style={{ margin: '0 0 16px 0' }}>
-                  <div className="calendar-rings">
-                    <div className="ring"></div>
-                    <div className="ring"></div>
-                    <div className="ring"></div>
-                    <div className="ring"></div>
-                    <div className="ring"></div>
-                    <div className="ring"></div>
-                    <div className="ring"></div>
+                {calendarDays.map((day, i) => (
+                  <div
+                    key={i}
+                    className={`calendar-widget__day ${
+                      day === selectedDate ? "is-today" : ""
+                    } ${!day ? "is-empty" : ""}`}
+                  >
+                    {day}
                   </div>
-                  <div className="calendar-label-text">CALENDAR</div>
-                </div>
-
-                <div className="calendar-grid" style={{ margin: '0 0 0 0' }}>
-                  {["S", "M", "T", "W", "T", "F", "S"].map((day, i) => (
-                    <div key={i} className="calendar-day-header">
-                      {day}
-                    </div>
-                  ))}
-
-                  {calendarDays.map((day, i) => (
-                    <div
-                      key={i}
-                      className={`calendar-day ${
-                        day === selectedDate ? "active" : ""
-                      } ${!day ? "empty" : ""}`}
-                      onClick={() => day && setSelectedDate(day)}
-                    >
-                      {day}
-                    </div>
-                  ))}
-                </div>
-                </div>
+                ))}
               </div>
             </motion.div>
           </div>

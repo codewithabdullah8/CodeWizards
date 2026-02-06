@@ -1456,6 +1456,112 @@ html {
     color: white;
 }
 
+/* Calendar Widget (Dashboard) */
+.calendar-widget {
+    background: #f2f1fb;
+    border-radius: 20px;
+    padding: 1.25rem 1.5rem 1.5rem;
+    box-shadow: 0 14px 30px rgba(90, 93, 130, 0.15);
+    border: 1px solid rgba(120, 120, 180, 0.12);
+}
+
+.calendar-widget__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 0.85rem;
+    border-bottom: 1px solid rgba(120, 120, 180, 0.2);
+    margin-bottom: 0.9rem;
+}
+
+.calendar-widget__month {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #1f2337;
+}
+
+.calendar-widget__nav {
+    display: flex;
+    gap: 0.65rem;
+}
+
+.calendar-widget__nav-btn {
+    width: 38px;
+    height: 30px;
+    border: none;
+    border-radius: 8px;
+    background: #ff4a6e;
+    color: #fff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    box-shadow: 0 6px 14px rgba(255, 74, 110, 0.25);
+    cursor: default;
+}
+
+.calendar-widget__nav-btn:disabled {
+    opacity: 0.9;
+}
+
+.calendar-widget__grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 0.45rem 0.35rem;
+}
+
+.calendar-widget__weekday {
+    text-align: center;
+    font-weight: 700;
+    color: #1f2337;
+    font-size: 0.95rem;
+    padding: 0.35rem 0;
+}
+
+.calendar-widget__day {
+    height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    color: #1f2337;
+    background: transparent;
+    pointer-events: none;
+}
+
+.calendar-widget__day.is-empty {
+    opacity: 0;
+}
+
+.calendar-widget__day.is-today {
+    background: #ff4a6e;
+    color: #fff;
+    box-shadow: 0 10px 18px rgba(255, 74, 110, 0.25);
+}
+
+/* Dark Mode Calendar Widget */
+.dark-mode .calendar-widget {
+    background: rgba(30, 41, 59, 0.9);
+    border-color: rgba(148, 163, 184, 0.2);
+    box-shadow: 0 16px 30px rgba(0, 0, 0, 0.35);
+}
+
+.dark-mode .calendar-widget__header {
+    border-bottom-color: rgba(148, 163, 184, 0.2);
+}
+
+.dark-mode .calendar-widget__month,
+.dark-mode .calendar-widget__weekday,
+.dark-mode .calendar-widget__day {
+    color: #f8fafc;
+}
+
+.dark-mode .calendar-widget__day.is-today {
+    background: #ff4a6e;
+    color: #ffffff;
+}
+
 /* Attractive Small Quote Card */
 .quote-card {
     background: linear-gradient(135deg, var(--bg-primary) 0%, rgba(255, 255, 255, 0.8) 100%);
