@@ -7,7 +7,12 @@ const User = require("../models/User");
 const router = express.Router();
 
 /* ===============================
-   GOOGLE ROUTES
+   HELPERS
+================================*/
+const GMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@gmail\.com$/;
+
+/* ===============================
+   GOOGLE AUTH
 ================================*/
 router.get(
   "/google",
@@ -19,7 +24,7 @@ router.get(
   passport.authenticate("google", { session: false }),
   (req, res) => {
     const token = jwt.sign(
-      { id: req.user._id },
+      { id: req.user._id, email: req.user.email },
       process.env.JWT_SECRET,
       { expiresIn: "7d" }
     );
@@ -29,7 +34,7 @@ router.get(
 );
 
 /* ===============================
-   GET CURRENT USER  ✅ STEP 8 FIX
+   CURRENT USER
 ================================*/
 router.get("/me", async (req, res) => {
   try {
@@ -46,15 +51,25 @@ router.get("/me", async (req, res) => {
 });
 
 /* ===============================
-   SIGNUP (LOCAL)
+   SIGNUP (GMAIL ONLY)
 ================================*/
 router.post("/signup", async (req, res) => {
   try {
     let { name, email, password } = req.body;
+
+    if (!name || !email || !password)
+      return res.status(400).json({ message: "All fields required" });
+
     email = email.toLowerCase().trim();
 
+    if (!GMAIL_REGEX.test(email))
+      return res.status(400).json({ message: "Only Gmail accounts allowed" });
+
+    if (password.length < 6)
+      return res.status(400).json({ message: "Password too short" });
+
     if (await User.findOne({ email }))
-      return res.status(400).json({ message: "Email exists" });
+      return res.status(400).json({ message: "Email already exists" });
 
     const hash = await bcrypt.hash(password, 10);
 
@@ -65,29 +80,49 @@ router.post("/signup", async (req, res) => {
       provider: "local",
     });
 
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+      expiresIn: "7d",
+    });
+
     res.json({ token, user });
-  } catch {
+  } catch (err) {
+    console.error(err);
     res.status(500).json({ message: "Server error" });
   }
 });
 
 /* ===============================
-   LOGIN (LOCAL)
+   LOGIN (GMAIL ONLY)
 ================================*/
 router.post("/login", async (req, res) => {
-  const { email, password } = req.body;
+  try {
+    let { email, password } = req.body;
+    email = email?.toLowerCase().trim();
 
-  const user = await User.findOne({ email: email.toLowerCase() });
+    if (!email || !password)
+      return res.status(400).json({ message: "Missing fields" });
 
-  if (!user || !user.passwordHash)
-    return res.status(400).json({ message: "Invalid credentials" });
+    if (!GMAIL_REGEX.test(email))
+      return res.status(400).json({ message: "Only Gmail accounts allowed" });
 
-  if (!(await bcrypt.compare(password, user.passwordHash)))
-    return res.status(400).json({ message: "Invalid credentials" });
+    const user = await User.findOne({ email });
 
-  const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
-  res.json({ token, user });
+    if (!user || user.provider === "google")
+      return res.status(400).json({ message: "Use Google login" });
+
+    const ok = await bcrypt.compare(password, user.passwordHash);
+    if (!ok)
+      return res.status(400).json({ message: "Invalid credentials" });
+
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+      expiresIn: "7d",
+    });
+
+    res.json({ token, user });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
 });
 
 module.exports = router;

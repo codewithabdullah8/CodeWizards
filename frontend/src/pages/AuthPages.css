@@ -212,6 +212,11 @@ body:has(.auth-container) {
   transform: translateY(-2px);
 }
 
+.dark-mode .auth-container .auth-google-btn {
+  color: #111827;
+  background: #ffffff;
+}
+
 .auth-divider {
   position: relative;
   text-align: center;
@@ -233,7 +238,7 @@ body:has(.auth-container) {
   display: inline-block;
   padding: 0 12px;
   background: var(--auth-panel);
-  color: #7f8a98;
+  color: #7a7878;
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 1px;
@@ -279,6 +284,15 @@ body:has(.auth-container) {
 
 .form-input::placeholder {
   color: #94a1b2;
+}
+
+.dark-mode .auth-container .form-input {
+  color: #111827;
+  background: #ffffff;
+}
+
+.dark-mode .auth-container .form-input::placeholder {
+  color: #6b7280;
 }
 
 .form-hint {
