@@ -172,6 +172,8 @@ const loadTodayReminder = async () => {
                   <button
                     className="calendar-widget__nav-btn"
                     onClick={previousMonth}
+                    disabled
+                    aria-disabled="true"
                     aria-label="Previous month"
                   >
                     <i className="bi bi-chevron-left"></i>
@@ -179,6 +181,8 @@ const loadTodayReminder = async () => {
                   <button
                     className="calendar-widget__nav-btn"
                     onClick={nextMonth}
+                    disabled
+                    aria-disabled="true"
                     aria-label="Next month"
                   >
                     <i className="bi bi-chevron-right"></i>
@@ -338,150 +342,166 @@ const loadTodayReminder = async () => {
               </div>
             </motion.div>
 
-            {/* Mood Analysis Card */}
+                        {/* Mood Analysis Card */}
             <motion.div
-              className="card border-0 mt-4"
-              style={{
-                boxShadow: '0 8px 24px rgba(102, 126, 234, 0.15)',
-                borderRadius: '16px',
-                overflow: 'hidden',
-                background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(248, 250, 252, 0.9) 100%)'
-              }}
+              className="card border-0 mt-4 mood-analysis-card"
               initial={{ x: 20, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
               transition={{ delay: 0.4, duration: 0.5 }}
             >
               <div className="card-body p-0">
-                {/* Header with gradient */}
-                <div style={{
-                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                  padding: '20px',
-                  color: 'white',
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center'
-                }}>
-                  <h6 className="mb-0" style={{ color: 'white', fontWeight: '600' }}>
-                    <i className="bi bi-graph-up me-2"></i>
-                    Mood Analysis
-                  </h6>
-                  <span style={{ fontSize: '12px', opacity: '0.9' }}>This Week</span>
+                <div className="mood-analysis__header">
+                  <div className="mood-analysis__title">
+                    <span className="mood-analysis__icon">
+                      <i className="bi bi-graph-up"></i>
+                    </span>
+                    <div>
+                      <div className="mood-analysis__eyebrow">Mood Analysis</div>
+                      <div className="mood-analysis__sub">Consistency + sentiment across the last 7 days</div>
+                    </div>
+                  </div>
+                  <div className="mood-analysis__pill">This Week</div>
                 </div>
 
-                <div className="mood-analysis-container" style={{ padding: '20px' }}>
-                  {/* Overall Mood Indicator */}
-                  <div className="mood-overall-stat mb-4" style={{
-                    background: 'linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)',
-                    padding: '15px',
-                    borderRadius: '12px',
-                    textAlign: 'center'
-                  }}>
-                    <div style={{ fontSize: '32px', marginBottom: '8px' }}>😊</div>
-                    <div style={{ fontSize: '13px', color: '#6b5b42', fontWeight: '600' }}>Overall Mood: Happy</div>
-                    <div style={{ fontSize: '11px', color: '#8b7355', marginTop: '4px' }}>Based on 7 entries</div>
-                  </div>
+                <div className="mood-analysis__body">
+                  <div className="mood-analysis__grid">
+                    <div className="mood-panel mood-panel--summary">
+                      <div className="mood-summary">
+                        <div className="mood-summary__emoji">??</div>
+                        <div className="mood-summary__content">
+                          <span className="mood-summary__label">Overall Mood</span>
+                          <h4 className="mood-summary__value">Happy</h4>
+                          <span className="mood-summary__meta">7 entries � Thu was your best day</span>
+                        </div>
+                        <div
+                          className="mood-summary__ring"
+                          style={{ "--value": 72 }}
+                          aria-label="Energy level 72 percent"
+                        ></div>
+                      </div>
 
-                  <div className="mood-stat mb-3">
-                    <div className="d-flex justify-content-between align-items-center mb-2">
-                      <span className="mood-stat-label">😊 Happy</span>
-                      <span className="mood-stat-value">35%</span>
-                    </div>
-                    <div className="mood-progress-bar">
-                      <motion.div 
-                        className="mood-progress-fill" 
-                        style={{ background: 'linear-gradient(90deg, #ffc107, #ff9800)' }}
-                        initial={{ width: 0 }}
-                        animate={{ width: '35%' }}
-                        transition={{ duration: 0.8 }}
-                      ></motion.div>
-                    </div>
-                  </div>
+                      <div className="mood-summary__chips">
+                        <span className="mood-chip">Streak: 4 days</span>
+                        <span className="mood-chip">Peak: 4.2/5</span>
+                        <span className="mood-chip">Variability: Low</span>
+                      </div>
 
-                  <div className="mood-stat mb-3">
-                    <div className="d-flex justify-content-between align-items-center mb-2">
-                      <span className="mood-stat-label">😌 Calm</span>
-                      <span className="mood-stat-value">25%</span>
+                      <div className="mood-spark">
+                        <span className="mood-spark__label">Weekly Trend</span>
+                        <div className="mood-spark__bars">
+                          <span className="mood-spark__bar" style={{ "--h": "40%" }}></span>
+                          <span className="mood-spark__bar" style={{ "--h": "52%" }}></span>
+                          <span className="mood-spark__bar" style={{ "--h": "48%" }}></span>
+                          <span className="mood-spark__bar" style={{ "--h": "68%" }}></span>
+                          <span className="mood-spark__bar" style={{ "--h": "60%" }}></span>
+                          <span className="mood-spark__bar" style={{ "--h": "72%" }}></span>
+                          <span className="mood-spark__bar" style={{ "--h": "62%" }}></span>
+                        </div>
+                      </div>
                     </div>
-                    <div className="mood-progress-bar">
-                      <motion.div 
-                        className="mood-progress-fill" 
-                        style={{ background: 'linear-gradient(90deg, #17a2b8, #20c997)' }}
-                        initial={{ width: 0 }}
-                        animate={{ width: '25%' }}
-                        transition={{ duration: 0.8, delay: 0.1 }}
-                      ></motion.div>
-                    </div>
-                  </div>
 
-                  <div className="mood-stat mb-3">
-                    <div className="d-flex justify-content-between align-items-center mb-2">
-                      <span className="mood-stat-label">😔 Sad</span>
-                      <span className="mood-stat-value">20%</span>
-                    </div>
-                    <div className="mood-progress-bar">
-                      <motion.div 
-                        className="mood-progress-fill" 
-                        style={{ background: 'linear-gradient(90deg, #6c757d, #495057)' }}
-                        initial={{ width: 0 }}
-                        animate={{ width: '20%' }}
-                        transition={{ duration: 0.8, delay: 0.2 }}
-                      ></motion.div>
-                    </div>
-                  </div>
+                    <div className="mood-panel mood-panel--stats">
+                      <div className="mood-stats__header">
+                        <h6>Distribution</h6>
+                        <span className="mood-note">Balanced week</span>
+                      </div>
 
-                  <div className="mood-stat mb-3">
-                    <div className="d-flex justify-content-between align-items-center mb-2">
-                      <span className="mood-stat-label">😰 Anxious</span>
-                      <span className="mood-stat-value">15%</span>
-                    </div>
-                    <div className="mood-progress-bar">
-                      <motion.div 
-                        className="mood-progress-fill" 
-                        style={{ background: 'linear-gradient(90deg, #dc3545, #c82333)' }}
-                        initial={{ width: 0 }}
-                        animate={{ width: '15%' }}
-                        transition={{ duration: 0.8, delay: 0.3 }}
-                      ></motion.div>
-                    </div>
-                  </div>
+                      <div className="mood-stat">
+                        <div className="mood-stat__row">
+                          <span className="mood-stat__label">?? Joyful</span>
+                          <span className="mood-stat__value">35%</span>
+                        </div>
+                        <div className="mood-progress">
+                          <motion.div
+                            className="mood-progress__fill is-joy"
+                            initial={{ width: 0 }}
+                            animate={{ width: "35%" }}
+                            transition={{ duration: 0.8 }}
+                          ></motion.div>
+                        </div>
+                      </div>
 
-                  <div className="mood-stat mb-3">
-                    <div className="d-flex justify-content-between align-items-center mb-2">
-                      <span className="mood-stat-label">😡 Angry</span>
-                      <span className="mood-stat-value">5%</span>
-                    </div>
-                    <div className="mood-progress-bar">
-                      <motion.div 
-                        className="mood-progress-fill" 
-                        style={{ background: 'linear-gradient(90deg, #fd7e14, #e76a3d)' }}
-                        initial={{ width: 0 }}
-                        animate={{ width: '5%' }}
-                        transition={{ duration: 0.8, delay: 0.4 }}
-                      ></motion.div>
-                    </div>
-                  </div>
+                      <div className="mood-stat">
+                        <div className="mood-stat__row">
+                          <span className="mood-stat__label">?? Calm</span>
+                          <span className="mood-stat__value">25%</span>
+                        </div>
+                        <div className="mood-progress">
+                          <motion.div
+                            className="mood-progress__fill is-calm"
+                            initial={{ width: 0 }}
+                            animate={{ width: "25%" }}
+                            transition={{ duration: 0.8, delay: 0.1 }}
+                          ></motion.div>
+                        </div>
+                      </div>
 
-                  {/* Mood Insights */}
-                  <motion.div 
-                    style={{
-                      marginTop: '24px',
-                      padding: '20px',
-                      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                      borderRadius: '12px',
-                      boxShadow: '0 4px 12px rgba(102, 126, 234, 0.2)'
-                    }}
-                    initial={{ y: 10, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    transition={{ duration: 0.6, delay: 0.5 }}
-                  >
-                    <div style={{ fontSize: '13px', fontWeight: '700', color: 'white', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <i className="bi bi-lightbulb-fill" style={{ fontSize: '18px' }}></i>
-                      Daily Insight
+                      <div className="mood-stat">
+                        <div className="mood-stat__row">
+                          <span className="mood-stat__label">?? Low</span>
+                          <span className="mood-stat__value">20%</span>
+                        </div>
+                        <div className="mood-progress">
+                          <motion.div
+                            className="mood-progress__fill is-low"
+                            initial={{ width: 0 }}
+                            animate={{ width: "20%" }}
+                            transition={{ duration: 0.8, delay: 0.2 }}
+                          ></motion.div>
+                        </div>
+                      </div>
+
+                      <div className="mood-stat">
+                        <div className="mood-stat__row">
+                          <span className="mood-stat__label">?? Anxious</span>
+                          <span className="mood-stat__value">15%</span>
+                        </div>
+                        <div className="mood-progress">
+                          <motion.div
+                            className="mood-progress__fill is-anxious"
+                            initial={{ width: 0 }}
+                            animate={{ width: "15%" }}
+                            transition={{ duration: 0.8, delay: 0.3 }}
+                          ></motion.div>
+                        </div>
+                      </div>
+
+                      <div className="mood-stat">
+                        <div className="mood-stat__row">
+                          <span className="mood-stat__label">?? Frustrated</span>
+                          <span className="mood-stat__value">5%</span>
+                        </div>
+                        <div className="mood-progress">
+                          <motion.div
+                            className="mood-progress__fill is-frustrated"
+                            initial={{ width: 0 }}
+                            animate={{ width: "5%" }}
+                            transition={{ duration: 0.8, delay: 0.4 }}
+                          ></motion.div>
+                        </div>
+                      </div>
                     </div>
-                    <div style={{ fontSize: '13px', color: 'rgba(255, 255, 255, 0.95)', lineHeight: '1.6', fontWeight: '400' }}>
-                      You've been mostly happy this week! Keep maintaining your positive outlook and try to manage stress during anxious moments.
-                    </div>
-                  </motion.div>
+
+                    <motion.div
+                      className="mood-panel mood-panel--insight"
+                      initial={{ y: 10, opacity: 0 }}
+                      animate={{ y: 0, opacity: 1 }}
+                      transition={{ duration: 0.6, delay: 0.5 }}
+                    >
+                      <div className="insight-header">
+                        <i className="bi bi-lightbulb-fill"></i>
+                        Daily Insight
+                      </div>
+                      <p>
+                        Your week leaned optimistic with a mid-week lift. Keep the same routine on
+                        Tuesday and Thursday to stabilize your energy on Friday.
+                      </p>
+                      <div className="insight-actions">
+                        <button className="btn btn-sm btn-outline-light">Log Reflection</button>
+                        <button className="btn btn-sm btn-light">3-min Reset</button>
+                      </div>
+                    </motion.div>
+                  </div>
                 </div>
               </div>
             </motion.div>

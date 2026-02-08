@@ -65,23 +65,9 @@ router.post("/signup", async (req, res) => {
       provider: "local",
     });
 
-    const token = jwt.sign(
-      { id: user._id },
-      process.env.JWT_SECRET,
-      { expiresIn: "7d" }
-    );
-    
-    res.json({ 
-      token, 
-      user: {
-        _id: user._id,
-        name: user.name,
-        email: user.email,
-        provider: user.provider
-      }
-    });
-  } catch (err) {
-    console.error("Signup error:", err);
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
+    res.json({ token, user });
+  } catch {
     res.status(500).json({ message: "Server error" });
   }
 });
@@ -90,36 +76,18 @@ router.post("/signup", async (req, res) => {
    LOGIN (LOCAL)
 ================================*/
 router.post("/login", async (req, res) => {
-  try {
-    const { email, password } = req.body;
+  const { email, password } = req.body;
 
-    const user = await User.findOne({ email: email.toLowerCase() });
+  const user = await User.findOne({ email: email.toLowerCase() });
 
-    if (!user || !user.passwordHash)
-      return res.status(400).json({ message: "Invalid credentials" });
+  if (!user || !user.passwordHash)
+    return res.status(400).json({ message: "Invalid credentials" });
 
-    if (!(await bcrypt.compare(password, user.passwordHash)))
-      return res.status(400).json({ message: "Invalid credentials" });
+  if (!(await bcrypt.compare(password, user.passwordHash)))
+    return res.status(400).json({ message: "Invalid credentials" });
 
-    const token = jwt.sign(
-      { id: user._id },
-      process.env.JWT_SECRET,
-      { expiresIn: "7d" }
-    );
-    
-    res.json({ 
-      token, 
-      user: {
-        _id: user._id,
-        name: user.name,
-        email: user.email,
-        provider: user.provider
-      }
-    });
-  } catch (err) {
-    console.error("Login error:", err);
-    res.status(500).json({ message: "Server error" });
-  }
+  const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
+  res.json({ token, user });
 });
 
 module.exports = router;
