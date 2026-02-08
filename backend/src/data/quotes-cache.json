@@ -1,10 +1,14 @@
 {
-  "date": "2026-02-06",
+  "date": "2026-02-07",
   "quote": {
-    "text": "Time heals what reason cannot.  ",
-    "author": "Seneca"
+    "text": "Whatever is begun in anger, ends in shame.",
+    "author": "Benjamin Franklin"
   },
   "history": [
+    {
+      "text": "Whatever is begun in anger, ends in shame.",
+      "author": "Benjamin Franklin"
+    },
     {
       "text": "Time heals what reason cannot.  ",
       "author": "Seneca"

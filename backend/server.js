@@ -9,10 +9,22 @@ require("./src/config/passport");
 const app = express();
 
 /* ---------- MIDDLEWARE ---------- */
-app.use(cors({
-  origin: "http://localhost:3000",
-  credentials: true
-}));
+const allowedOrigins = [
+  process.env.CLIENT_URL,
+  "http://localhost:3000",
+  "http://localhost:5173",
+].filter(Boolean);
+
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.includes(origin)) return callback(null, true);
+      return callback(new Error("Not allowed by CORS"));
+    },
+    credentials: true,
+  })
+);
 
 app.use(express.json());
 app.use(passport.initialize());

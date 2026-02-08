@@ -172,8 +172,6 @@ const loadTodayReminder = async () => {
                   <button
                     className="calendar-widget__nav-btn"
                     onClick={previousMonth}
-                    disabled
-                    aria-disabled="true"
                     aria-label="Previous month"
                   >
                     <i className="bi bi-chevron-left"></i>
@@ -181,8 +179,6 @@ const loadTodayReminder = async () => {
                   <button
                     className="calendar-widget__nav-btn"
                     onClick={nextMonth}
-                    disabled
-                    aria-disabled="true"
                     aria-label="Next month"
                   >
                     <i className="bi bi-chevron-right"></i>
