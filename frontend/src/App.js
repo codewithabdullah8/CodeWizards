@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import OAuthSuccess from "./pages/oAuthSuccess";
 
 import {
@@ -27,7 +27,7 @@ import ProfessionalViewEntry from "./pages/ProfessionalDiary/ViewEntry";
 import RecentEntries from "./pages/RecentEntries";
 
 
-// ✅ Protected route wrapper
+// ✅ Protected route wrapper - checks if user is authenticated
 function Protected({ children }) {
   const token = localStorage.getItem("mydiary_token");
   const storedUser = localStorage.getItem("mydiary_user");
@@ -39,17 +39,25 @@ function Protected({ children }) {
   return children;
 }
 
+// ✅ Auth route wrapper - redirects logged-in users away from login/signup
+function AuthRoute({ children }) {
+  const token = localStorage.getItem("mydiary_token");
+  const storedUser = localStorage.getItem("mydiary_user");
 
-export default function App() {
+  if (token && storedUser) {
+    return <Navigate to="/" replace />;
+  }
+
+  return children;
+}
+
+// ✅ AppContent component that uses hooks inside Provider
+function AppContent() {
+  const navigate = useNavigate();
   const [user, setUser] = useState(() => {
     const storedUser = localStorage.getItem("mydiary_user");
     return storedUser ? JSON.parse(storedUser) : null;
   });
-
-  const navigate = useNavigate();
-
-  // Bootstrap tooltips are handled automatically with data-bs-toggle attributes
-  // No manual initialization needed in Bootstrap 5
 
   // ✅ Check today's reminder after login (popup removed)
   useEffect(() => {
@@ -58,8 +66,7 @@ export default function App() {
     API.get("/reminders/today")
       .then(({ data }) => {
         if (data?.message) {
-          // alert(data.message); // Removed popup as requested
-          console.log("Reminder:", data.message); // Log to console instead
+          console.log("Reminder:", data.message);
         }
       })
       .catch(() => {  
@@ -67,146 +74,150 @@ export default function App() {
       });
   }, [user]);
 
-  // ✅ Logout
-  const handleLogout = () => {
+  // ✅ Logout - navigate to login with state reset
+  const handleLogout = useCallback(() => {
     localStorage.removeItem("mydiary_token");
     localStorage.removeItem("mydiary_user");
+    localStorage.removeItem("mydiary_email");
+    localStorage.removeItem("mydiary_remember");
     setUser(null);
-    navigate("/login");
-  };
+    navigate("/login", { replace: true });
+  }, [navigate]);
+
+  // ✅ Callback for successful login - navigate without page reload
+  const handleLoginSuccess = useCallback((data) => {
+    // data has { token, user }
+    localStorage.setItem("mydiary_token", data.token);
+    localStorage.setItem("mydiary_user", JSON.stringify(data.user));
+    setUser(data.user);
+    navigate("/", { replace: true });
+  }, [navigate]);
+
+  // ✅ Callback for successful signup - navigate without page reload
+  const handleSignupSuccess = useCallback((data) => {
+    // data has { token, user }
+    localStorage.setItem("mydiary_token", data.token);
+    localStorage.setItem("mydiary_user", JSON.stringify(data.user));
+    setUser(data.user);
+    navigate("/", { replace: true });
+  }, [navigate]);
 
   return (
     <ToastProvider>
       <ThemeProvider>
-      {/* Navbar always visible */}
-     {user && <NavBar user={user} onLogout={handleLogout} />}         
+        {/* Navbar visible only when user is logged in */}
+        {user && <NavBar user={user} onLogout={handleLogout} />}         
 
-      <Routes>
-        {/* Dashboard */} 
-        <Route
-          path="/"
-          element={
-            <Protected>
-              <Dashboard />
-            </Protected>
-          }
-        />
+        <Routes>
+          {/* ===== PROTECTED ROUTES (require authentication) ===== */}
+          
+          <Route
+            path="/"
+            element={
+              <Protected>
+                <Dashboard />
+              </Protected>
+            }
+          />
 
-        {/* Personal Diary */}
-        <Route
-          path="/personal"
-          element={
-            <Protected>
-              <Personal />
-            </Protected>
-          }
-        />
+          <Route
+            path="/personal"
+            element={
+              <Protected>
+                <Personal />
+              </Protected>
+            }
+          />
 
-        {/* Recent Entries */}
-        <Route
-          path="/recent"
-          element={
-            <Protected>
-              <RecentEntries />
-            </Protected>
-          }
-        />
+          <Route
+            path="/recent"
+            element={
+              <Protected>
+                <RecentEntries />
+              </Protected>
+            }
+          />
 
-        {/* Professional Diary */}
-        <Route
-          path="/professional"
-          element={
-            <Protected>
-              <ProfessionalHome />
-            </Protected>
-          }
-        />
+          <Route
+            path="/professional"
+            element={
+              <Protected>
+                <ProfessionalHome />
+              </Protected>
+            }
+          />
 
-        {/* Schedule */}
-        <Route
-          path="/schedule"
-          element={
-            <Protected>
-              <Schedule />
-            </Protected>
-          }
-        />
+          <Route
+            path="/professional/new"
+            element={
+              <Protected>
+                <ProfessionalNewEntry />
+              </Protected>
+            }
+          />
 
-        {/* Single diary entry */}
-        <Route
-          path="/entry/:id"
-          element={
-            <Protected>
-              <DiaryEntry />
-            </Protected>
-          }
-        />
+          <Route
+            path="/professional/entry/:id"
+            element={
+              <Protected>
+                <ProfessionalViewEntry />
+              </Protected>
+            }
+          />
 
-        {/* Auth */}
-        <Route
-          path="/login"
-          element={
-            <Login
-              onLogin={(res) => {
-                setUser(res.user);
-                navigate("/");
-              }}
-            />
-          }
-        />
+          <Route
+            path="/schedule"
+            element={
+              <Protected>
+                <Schedule />
+              </Protected>
+            }
+          />
 
-<Route
-  path="/oauth-success"
-  element={<OAuthSuccess onLogin={setUser} />}
-/>
-c
+          <Route
+            path="/entry/:id"
+            element={
+              <Protected>
+                <DiaryEntry />
+              </Protected>
+            }
+          />
 
-        <Route
-          path="/signup"
-          element={
-            <Signup
-              onSignup={(res) => {
-                setUser(res.user);
-                navigate("/");
-              }}
-            />
-          }
-        />
-        {/* Professional Diary */}
-<Route
-  path="/professional"
-  element={
-    <Protected>
-      <ProfessionalHome />
-    </Protected>
-  }
-/>
+          {/* ===== AUTH ROUTES (redirects away if already logged in) ===== */}
 
-<Route
-  path="/professional/new"
-  element={
-    <Protected>
-      <ProfessionalNewEntry />
-    </Protected>
-  }
-/>
+          <Route
+            path="/login"
+            element={
+              <AuthRoute>
+                <Login onLogin={handleLoginSuccess} />
+              </AuthRoute>
+            }
+          />
 
-<Route
-  path="/professional/entry/:id"
-  element={
-    <Protected>
-      <ProfessionalViewEntry />
-    </Protected>
-  }
-/>
+          <Route
+            path="/signup"
+            element={
+              <AuthRoute>
+                <Signup onSignup={handleSignupSuccess} />
+              </AuthRoute>
+            }
+          />
 
+          <Route
+            path="/oauth-success"
+            element={
+              <OAuthSuccess onLogin={handleLoginSuccess} />
+            }
+          />
 
-
-
-        {/* Catch-all (keep LAST) */}
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
+          {/* ===== CATCH-ALL (keep LAST) ===== */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
       </ThemeProvider>
     </ToastProvider>
   );
+}
+
+export default function App() {
+  return <AppContent />;
 }

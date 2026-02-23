@@ -16,6 +16,19 @@ const ScheduleAPI = {
   createItem: (payload) => API.post("/new", payload),
   deleteItem: (id) => API.delete(`/delete/${id}`),
   toggleComplete: (id) => API.patch(`/complete/${id}`),
+  getItemDates: async () => {
+    const { data } = await API.get("/all");
+    // Extract only dates from schedule items
+    return data.map((item) => {
+      const date = new Date(item.date);
+      return {
+        date: date.toISOString().split('T')[0], // YYYY-MM-DD format
+        day: date.getDate(),
+        month: date.getMonth(),
+        year: date.getFullYear()
+      };
+    });
+  }
 };
 
 export default ScheduleAPI;

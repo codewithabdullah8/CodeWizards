@@ -1,10 +1,14 @@
 {
-  "date": "2026-02-08",
+  "date": "2026-02-21",
   "quote": {
-    "text": "If I persist long enough I will win.",
-    "author": "Og Mandino"
+    "text": "Change is hardest at the beginning, messiest in the middle and best at the end.",
+    "author": "Robin Sharma"
   },
   "history": [
+    {
+      "text": "Change is hardest at the beginning, messiest in the middle and best at the end.",
+      "author": "Robin Sharma"
+    },
     {
       "text": "If I persist long enough I will win.",
       "author": "Og Mandino"

@@ -10,23 +10,41 @@ export default function OAuthSuccess({ onLogin }) {
 
     if (!token) return;
 
-    localStorage.setItem("mydiary_token", token);
-
     fetch("http://localhost:5000/api/auth/me", {
       headers: {
         Authorization: `Bearer ${token}`,
       },
     })
-      .then(res => res.json())
+      .then(res => {
+        if (!res.ok) throw new Error("Failed to fetch user");
+        return res.json();
+      })
       .then(user => {
+        localStorage.setItem("mydiary_token", token);
         localStorage.setItem("mydiary_user", JSON.stringify(user));
 
-        // 🔥 THIS WAS MISSING
-        if (onLogin) onLogin(user);
-
-        navigate("/");
+        // ✅ CRITICAL: Pass both token and user to onLogin callback
+        if (onLogin) {
+          onLogin({ token, user });
+        } else {
+          navigate("/", { replace: true });
+        }
+      })
+      .catch(err => {
+        console.error("OAuth error:", err);
+        navigate("/login", { replace: true });
       });
   }, [navigate, onLogin]);
 
-  return <p>Signing you in...</p>;
+  return (
+    <div style={{ 
+      display: "flex", 
+      justifyContent: "center", 
+      alignItems: "center", 
+      height: "100vh",
+      fontSize: "1.2em"
+    }}>
+      <p>Signing you in...</p>
+    </div>
+  );
 }
