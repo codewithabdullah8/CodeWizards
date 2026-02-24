@@ -5,6 +5,7 @@ import { useToast } from "../contexts/ToastContext";
 // import API from "../api";
 import ReminderAPI from "../api/reminders";
 import QuoteAPI from "../api/quotes";
+import ScheduleAPI from "../api/schedule";
 
 
 export default function Dashboard() {
@@ -18,7 +19,11 @@ export default function Dashboard() {
   const [createError, setCreateError] = useState("");
 
   const [currentDate, setCurrentDate] = useState(new Date());
-  const selectedDate = currentDate.getDate();
+  const today = new Date();
+  const isCurrentMonth =
+    currentDate.getFullYear() === today.getFullYear() &&
+    currentDate.getMonth() === today.getMonth();
+  const selectedDate = isCurrentMonth ? today.getDate() : null;
 
   const [quote, setQuote] = useState({
     text: "The best way to predict the future is to create it.",
@@ -66,10 +71,72 @@ const loadTodayReminder = async () => {
     console.error("Reminder error", err);
   }
 };
+
+// Schedule calendar integration
+const [scheduleItems, setScheduleItems] = useState([]);
+const [daysWithEvents, setDaysWithEvents] = useState(new Set());
+const [clickedDate, setClickedDate] = useState(null);
+const [selectedEvents, setSelectedEvents] = useState([]);
+
+const loadScheduleItems = async () => {
+  try {
+    const { data } = await ScheduleAPI.getItems();
+    setScheduleItems(data);
+    updateDaysWithEvents(data, currentDate);
+  } catch (err) {
+    console.error("Schedule error", err);
+  }
+};
+
+// Handle date click to show events
+const handleDateClick = (day) => {
+  if (!day) return; // Skip empty cells
+  
+  setClickedDate(day);
+  
+  // Filter events for the clicked date
+  const year = currentDate.getFullYear();
+  const month = currentDate.getMonth();
+  
+  const eventsForDate = scheduleItems.filter((item) => {
+    const itemDate = new Date(item.date);
+    return (
+      itemDate.getFullYear() === year &&
+      itemDate.getMonth() === month &&
+      itemDate.getDate() === day
+    );
+  });
+  
+  setSelectedEvents(eventsForDate);
+};
+
+const updateDaysWithEvents = (items, dateToCheck) => {
+  const year = dateToCheck.getFullYear();
+  const month = dateToCheck.getMonth();
+  
+  const eventDays = new Set();
+  items.forEach((item) => {
+    const itemDate = new Date(item.date);
+    if (
+      itemDate.getFullYear() === year &&
+      itemDate.getMonth() === month
+    ) {
+      eventDays.add(itemDate.getDate());
+    }
+  });
+  
+  setDaysWithEvents(eventDays);
+};
+
  useEffect(() => {
   loadQuote();
   loadTodayReminder();
+  loadScheduleItems();
 }, []);
+
+ useEffect(() => {
+  updateDaysWithEvents(scheduleItems, currentDate);
+}, [currentDate, scheduleItems]);
   const getDaysInMonth = () => {
     const year = currentDate.getFullYear();
     const month = currentDate.getMonth();
@@ -124,14 +191,14 @@ const loadTodayReminder = async () => {
   };
 
   const previousMonth = () => {
-    setCurrentDate(
-      new Date(currentDate.getFullYear(), currentDate.getMonth() - 1)
+    setCurrentDate((prev) =>
+      new Date(prev.getFullYear(), prev.getMonth() - 1, 1)
     );
   };
 
   const nextMonth = () => {
-    setCurrentDate(
-      new Date(currentDate.getFullYear(), currentDate.getMonth() + 1)
+    setCurrentDate((prev) =>
+      new Date(prev.getFullYear(), prev.getMonth() + 1, 1)
     );
   };
 
@@ -172,8 +239,6 @@ const loadTodayReminder = async () => {
                   <button
                     className="calendar-widget__nav-btn"
                     onClick={previousMonth}
-                    disabled
-                    aria-disabled="true"
                     aria-label="Previous month"
                   >
                     <i className="bi bi-chevron-left"></i>
@@ -181,8 +246,6 @@ const loadTodayReminder = async () => {
                   <button
                     className="calendar-widget__nav-btn"
                     onClick={nextMonth}
-                    disabled
-                    aria-disabled="true"
                     aria-label="Next month"
                   >
                     <i className="bi bi-chevron-right"></i>
@@ -201,13 +264,89 @@ const loadTodayReminder = async () => {
                   <div
                     key={i}
                     className={`calendar-widget__day ${
-                      day === selectedDate ? "is-today" : ""
-                    } ${!day ? "is-empty" : ""}`}
+                      selectedDate && day === selectedDate ? "is-today" : ""
+                    } ${!day ? "is-empty" : ""} ${
+                      day && daysWithEvents.has(day) ? "has-event" : ""
+                    } ${clickedDate === day ? "is-selected" : ""}`}
+                    onClick={() => handleDateClick(day)}
+                    style={{ cursor: day ? "pointer" : "default" }}
                   >
                     {day}
                   </div>
                 ))}
               </div>
+
+              {/* Events Display Panel */}
+              {clickedDate && (
+                <motion.div
+                  className="calendar-events-panel"
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <div className="events-header">
+                    <h4 className="events-date">
+                      {new Date(
+                        currentDate.getFullYear(),
+                        currentDate.getMonth(),
+                        clickedDate
+                      ).toLocaleDateString("en-US", {
+                        weekday: "short",
+                        month: "short",
+                        day: "numeric",
+                      })}
+                    </h4>
+                    <button
+                      onClick={() => {
+                        setClickedDate(null);
+                        setSelectedEvents([]);
+                      }}
+                      className="btn-close-events"
+                      title="Close"
+                    >
+                      <i className="bi bi-x"></i>
+                    </button>
+                  </div>
+
+                  {selectedEvents.length > 0 ? (
+                    <div className="events-list">
+                      {selectedEvents.map((event) => (
+                        <motion.div
+                          key={event._id}
+                          className="event-item"
+                          initial={{ opacity: 0, x: -5 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ duration: 0.2 }}
+                        >
+                          <div className="event-time">
+                            {event.time || "All day"}
+                          </div>
+                          <div className="event-title">{event.title}</div>
+                          {event.description && (
+                            <div className="event-description">
+                              {event.description.substring(0, 60)}
+                              {event.description.length > 60 ? "..." : ""}
+                            </div>
+                          )}
+                          <div className="event-priority">
+                            <span
+                              className={`priority-badge priority-${event.priority?.toLowerCase() || "medium"}`}
+                            >
+                              {event.priority || "Medium"}
+                            </span>
+                          </div>
+                        </motion.div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="events-empty">
+                      <i className="bi bi-calendar-x"></i>
+                      <p>No events for this date</p>
+                    </div>
+                  )}
+                </motion.div>
+              )}
             </motion.div>
           </div>
 
@@ -371,7 +510,7 @@ const loadTodayReminder = async () => {
                         <div className="mood-summary__content">
                           <span className="mood-summary__label">Overall Mood</span>
                           <h4 className="mood-summary__value">Happy</h4>
-                          <span className="mood-summary__meta">7 entries · Thu was your best day</span>
+                          <span className="mood-summary__meta">7 entries ï¿½ Thu was your best day</span>
                         </div>
                         <div
                           className="mood-summary__ring"
