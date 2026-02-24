@@ -1,5 +1,6 @@
 import axios from "axios";
 
+
 const API = axios.create({
   baseURL: "http://localhost:5000/api",
 });
@@ -23,5 +24,8 @@ export const getDiaryEntry = (id) => API.get(`/diary/${id}`);
 
 // Reminders
 export const getTodayReminder = () => API.get("/reminders/today");
+
+//mood
+export const saveMood = (data) => API.post("/mood", data);
 
 export default API;

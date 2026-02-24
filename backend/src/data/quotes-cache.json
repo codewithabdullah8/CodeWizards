@@ -1,10 +1,14 @@
 {
-  "date": "2026-02-23",
+  "date": "2026-02-24",
   "quote": {
-    "text": "The only lost cause is one we give up on before we enter the struggle.",
-    "author": "Vaclav Havel"
+    "text": "I dream my painting and I paint my dream.",
+    "author": "Vincent van Gogh"
   },
   "history": [
+    {
+      "text": "I dream my painting and I paint my dream.",
+      "author": "Vincent van Gogh"
+    },
     {
       "text": "The only lost cause is one we give up on before we enter the struggle.",
       "author": "Vaclav Havel"

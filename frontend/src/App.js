@@ -25,6 +25,7 @@ import Schedule from "./pages/Schedule";
 import ProfessionalNewEntry from "./pages/ProfessionalDiary/NewEntry";
 import ProfessionalViewEntry from "./pages/ProfessionalDiary/ViewEntry";
 import RecentEntries from "./pages/RecentEntries";
+import MoodCheckin from "./pages/MoodCheckin";
 
 
 // ✅ Protected route wrapper - checks if user is authenticated
@@ -209,6 +210,14 @@ function AppContent() {
               <OAuthSuccess onLogin={handleLoginSuccess} />
             }
           />
+          <Route
+  path="/mood-checkin"
+  element={
+    <Protected>
+      <MoodCheckin />
+    </Protected>
+  }
+/>  
 
           {/* ===== CATCH-ALL (keep LAST) ===== */}
           <Route path="*" element={<Navigate to="/" replace />} />

@@ -25,6 +25,7 @@ app.use("/api/personal", require("./src/routes/personal"));
 app.use("/api/diary", require("./src/routes/diary"));
 app.use("/api/professional-diary", require("./src/routes/ProfessionalDiary"));
 app.use("/api/schedule", require("./src/routes/schedule"));
+app.use("/api/mood", require("./src/routes/mood"));
 
 /* ---------- HEALTH CHECK (OPTIONAL BUT GOOD) ---------- */
 app.get("/api/health", (req, res) => {
