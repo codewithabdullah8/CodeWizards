@@ -8,7 +8,14 @@ const PersonalSchema = new mongoose.Schema({
   category: { type: String, default: 'General' },
   mood: { type: String, default: 'Neutral' },
   images: [{ type: String }],
-  date: { type: Date, default: Date.now }
+  date: { type: Date, default: Date.now },
+  // Mood check-in questions
+  energy: { type: Number, min: 1, max: 5, default: 3 },
+  stress: { type: Number, min: 1, max: 5, default: 3 },
+  positivity: { type: Number, min: 1, max: 5, default: 3 },
+  focus: { type: Number, min: 1, max: 5, default: 3 },
+  sleep: { type: Number, min: 1, max: 5, default: 3 },
+  emotion: { type: String, enum: ['calm', 'normal', 'low', 'irritated', 'exhausted'], default: 'normal' }
 }, { timestamps: true });
 
 module.exports = mongoose.model('Personal', PersonalSchema);

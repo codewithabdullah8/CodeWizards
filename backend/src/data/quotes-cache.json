@@ -1,10 +1,18 @@
 {
-  "date": "2026-02-24",
+  "date": "2026-02-26",
   "quote": {
-    "text": "I dream my painting and I paint my dream.",
-    "author": "Vincent van Gogh"
+    "text": "A clever person turns great troubles into little ones, and little ones into none at all. ",
+    "author": "Chinese Proverb"
   },
   "history": [
+    {
+      "text": "A clever person turns great troubles into little ones, and little ones into none at all. ",
+      "author": "Chinese Proverb"
+    },
+    {
+      "text": "Live in the sunshine, swim the sea, drink the wild air.",
+      "author": "Ralph Waldo Emerson"
+    },
     {
       "text": "I dream my painting and I paint my dream.",
       "author": "Vincent van Gogh"

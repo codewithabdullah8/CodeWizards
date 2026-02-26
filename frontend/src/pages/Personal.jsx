@@ -9,6 +9,22 @@ export default function Personal() {
   const [error, setError] = useState('');
   const [showCreate, setShowCreate] = useState(false);
   const [selectedEntry, setSelectedEntry] = useState(null);
+  const [moodAnswers, setMoodAnswers] = useState({
+    energy: 3,
+    stress: 3,
+    positivity: 3,
+    focus: 3,
+    sleep: 3,
+    emotion: 'normal',
+  });
+
+  const emotions = [
+    { label: '😌 Calm', value: 'calm', color: '#60a5fa' },
+    { label: '😐 Normal', value: 'normal', color: '#94a3b8' },
+    { label: '😔 Low', value: 'low', color: '#a78bfa' },
+    { label: '😡 Irritated', value: 'irritated', color: '#f87171' },
+    { label: '😴 Exhausted', value: 'exhausted', color: '#fb923c' },
+  ];
 
 
 
@@ -138,39 +154,58 @@ export default function Personal() {
           <AnimatePresence>
             {showCreate && (
               <motion.div 
-                className="create-form mb-4"
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
+                className="card shadow-lg mb-4"
+                initial={{ opacity: 0, scale: 0.95, y: -20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: -20 }}
                 transition={{ duration: 0.3 }}
+                style={{
+                  border: '2px solid #3b82f6',
+                  borderRadius: '16px',
+                }}
               >
-                <div className="d-flex justify-content-between align-items-center mb-4">
-                  <h4 className="mb-0 text-primary">
+                <div className="card-header bg-primary text-white d-flex justify-content-between align-items-center" style={{ borderRadius: '14px 14px 0 0' }}>
+                  <h4 className="mb-0">
                     <i className="bi bi-plus-circle me-2"></i>
-                    Create New Entry
+                    Create New Personal Entry
                   </h4>
                   <button
-                    className="icon-btn btn btn-outline-secondary"
+                    className="btn btn-sm btn-light"
                     onClick={() => setShowCreate(false)}
                     title="Cancel"
                   >
-                    <i className="bi bi-x"></i>
+                    <i className="bi bi-x-lg"></i>
                   </button>
                 </div>
 
-                <form
+                <div className="card-body" style={{ padding: '2rem' }}>
+                  <form
                   onSubmit={async (e) => {
                     e.preventDefault();
                     const form = e.target;
                     const payload = {
                       title: form.title.value,
                       content: form.content.value,
+                      energy: moodAnswers.energy,
+                      stress: moodAnswers.stress,
+                      positivity: moodAnswers.positivity,
+                      focus: moodAnswers.focus,
+                      sleep: moodAnswers.sleep,
+                      emotion: moodAnswers.emotion,
                     };
 
                     try {
                       const { data } = await PersonalAPI.createEntry(payload);
                       setEntries([data, ...entries]);
                       setShowCreate(false);
+                      setMoodAnswers({
+                        energy: 3,
+                        stress: 3,
+                        positivity: 3,
+                        focus: 3,
+                        sleep: 3,
+                        emotion: 'normal',
+                      });
                       form.reset();
                     } catch (err) {
                       alert("Failed to create entry");
@@ -188,6 +223,144 @@ export default function Personal() {
                       placeholder="Give your entry a meaningful title..."
                       required
                     />
+                  </div>
+
+                  {/* MOOD CHECK-IN QUESTIONS */}
+                  <div className="mb-4 p-4 bg-light rounded">
+                    <h5 className="text-primary mb-4">
+                      <i className="bi bi-emoji-smile me-2"></i>
+                      How are you feeling today?
+                    </h5>
+
+                    {/* ENERGY */}
+                    <div className="mb-4">
+                      <label className="form-label fw-bold">
+                        ⚡ How energetic did you feel today?
+                        <span className="ms-2 text-primary fs-5">{moodAnswers.energy}</span>
+                      </label>
+                      <input
+                        type="range"
+                        min="1"
+                        max="5"
+                        value={moodAnswers.energy}
+                        onChange={(e) => setMoodAnswers({...moodAnswers, energy: Number(e.target.value)})}
+                        className="form-range"
+                      />
+                      <div className="d-flex justify-content-between small text-muted">
+                        <span>Low</span>
+                        <span>High</span>
+                      </div>
+                    </div>
+
+                    {/* STRESS */}
+                    <div className="mb-4">
+                      <label className="form-label fw-bold">
+                        😰 How stressed were you today?
+                        <span className="ms-2 text-danger fs-5">{moodAnswers.stress}</span>
+                      </label>
+                      <input
+                        type="range"
+                        min="1"
+                        max="5"
+                        value={moodAnswers.stress}
+                        onChange={(e) => setMoodAnswers({...moodAnswers, stress: Number(e.target.value)})}
+                        className="form-range"
+                      />
+                      <div className="d-flex justify-content-between small text-muted">
+                        <span>Low</span>
+                        <span>High</span>
+                      </div>
+                    </div>
+
+                    {/* POSITIVITY */}
+                    <div className="mb-4">
+                      <label className="form-label fw-bold">
+                        ✨ Overall, how positive was your day?
+                        <span className="ms-2 text-success fs-5">{moodAnswers.positivity}</span>
+                      </label>
+                      <input
+                        type="range"
+                        min="1"
+                        max="5"
+                        value={moodAnswers.positivity}
+                        onChange={(e) => setMoodAnswers({...moodAnswers, positivity: Number(e.target.value)})}
+                        className="form-range"
+                      />
+                      <div className="d-flex justify-content-between small text-muted">
+                        <span>Low</span>
+                        <span>High</span>
+                      </div>
+                    </div>
+
+                    {/* FOCUS */}
+                    <div className="mb-4">
+                      <label className="form-label fw-bold">
+                        🎯 How focused or motivated were you?
+                        <span className="ms-2 text-warning fs-5">{moodAnswers.focus}</span>
+                      </label>
+                      <input
+                        type="range"
+                        min="1"
+                        max="5"
+                        value={moodAnswers.focus}
+                        onChange={(e) => setMoodAnswers({...moodAnswers, focus: Number(e.target.value)})}
+                        className="form-range"
+                      />
+                      <div className="d-flex justify-content-between small text-muted">
+                        <span>Low</span>
+                        <span>High</span>
+                      </div>
+                    </div>
+
+                    {/* SLEEP */}
+                    <div className="mb-4">
+                      <label className="form-label fw-bold">
+                        😴 How was your sleep last night?
+                        <span className="ms-2 text-info fs-5">{moodAnswers.sleep}</span>
+                      </label>
+                      <input
+                        type="range"
+                        min="1"
+                        max="5"
+                        value={moodAnswers.sleep}
+                        onChange={(e) => setMoodAnswers({...moodAnswers, sleep: Number(e.target.value)})}
+                        className="form-range"
+                      />
+                      <div className="d-flex justify-content-between small text-muted">
+                        <span>Poor</span>
+                        <span>Excellent</span>
+                      </div>
+                    </div>
+
+                    {/* EMOTION */}
+                    <div className="mb-3">
+                      <label className="form-label fw-bold">
+                        💭 Which best describes your emotional state?
+                      </label>
+                      <div className="d-flex gap-2 flex-wrap">
+                        {emotions.map((emo) => (
+                          <motion.button
+                            type="button"
+                            key={emo.value}
+                            onClick={() => setMoodAnswers({...moodAnswers, emotion: emo.value})}
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            className="btn"
+                            style={{
+                              padding: '10px 18px',
+                              borderRadius: '12px',
+                              border: moodAnswers.emotion === emo.value ? `2px solid ${emo.color}` : '2px solid #dee2e6',
+                              background: moodAnswers.emotion === emo.value ? emo.color : '#fff',
+                              color: moodAnswers.emotion === emo.value ? '#fff' : '#000',
+                              fontWeight: '600',
+                              boxShadow: moodAnswers.emotion === emo.value ? `0 4px 12px ${emo.color}40` : 'none',
+                            }}
+                          >
+                            {emo.label}
+                          </motion.button>
+                        ))}
+                      </div>
+                    </div>
                   </div>
 
                   <div className="mb-4">
@@ -226,26 +399,29 @@ export default function Personal() {
                     </motion.button>
                   </div>
                 </form>
+                </div>
               </motion.div>
             )}
           </AnimatePresence>
 
-          <motion.div 
-            className="d-flex justify-content-center mb-4"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.4, duration: 0.5 }}
-          >
-            <motion.button
-              className="btn btn-primary btn-lg px-5 py-3"
-              onClick={() => setShowCreate(true)}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+          {!showCreate && (
+            <motion.div 
+              className="d-flex justify-content-center mb-4"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.4, duration: 0.5 }}
             >
-              <i className="bi bi-plus-circle me-2 fs-5"></i>
-              New Personal Entry
-            </motion.button>
-          </motion.div>
+              <motion.button
+                className="btn btn-primary btn-lg px-5 py-3"
+                onClick={() => setShowCreate(true)}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <i className="bi bi-plus-circle me-2 fs-5"></i>
+                New Personal Entry
+              </motion.button>
+            </motion.div>
+          )}
 
           {entries.length === 0 ? (
             <motion.div 
@@ -259,17 +435,8 @@ export default function Personal() {
               </div>
               <h4 className="text-muted mb-3">No personal entries yet</h4>
               <p className="text-muted mb-4 fs-5">
-                Start your personal journey by creating your first diary entry.
+                Start your personal journey by creating your first diary entry using the button above.
               </p>
-              <motion.button
-                className="btn btn-primary btn-lg px-5 py-3"
-                onClick={() => setShowCreate(true)}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <i className="bi bi-plus-circle me-2"></i>
-                Create Your First Entry
-              </motion.button>
             </motion.div>
           ) : (
             <motion.div 

@@ -22,13 +22,14 @@ export default function ProfessionalHome() {
 
   if (loading) {
     return (
-      <motion.div 
-        className="container mt-5"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.5 }}
-      >
-        <div className="d-flex justify-content-center align-items-center" style={{ minHeight: '400px' }}>
+      <div className="container py-5">
+        <motion.div 
+          className="d-flex justify-content-center align-items-center"
+          style={{ minHeight: '400px' }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5 }}
+        >
           <div className="text-center">
             <motion.div 
               className="spinner-border text-primary mb-3"
@@ -38,69 +39,60 @@ export default function ProfessionalHome() {
             >
               <span className="visually-hidden">Loading...</span>
             </motion.div>
-            <p className="mt-2 text-muted fs-5">Loading your professional diary...</p>
+            <h5 className="text-muted">Loading your professional diary...</h5>
           </div>
-        </div>
-      </motion.div>
+        </motion.div>
+      </div>
     );
   }
 
   if (error) {
     return (
-      <motion.div 
-        className="container mt-5"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-      >
-        <div className="alert alert-danger d-flex align-items-center" role="alert">
+      <div className="container py-5">
+        <motion.div 
+          className="alert alert-danger d-flex align-items-center justify-content-center"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
           <i className="bi bi-exclamation-triangle me-3 fs-4"></i>
           <div>
             <h5 className="mb-1">Error Loading Professional Diary</h5>
             <p className="mb-0">{error}</p>
           </div>
-        </div>
-      </motion.div>
+        </motion.div>
+      </div>
     );
   }
 
   return (
     <motion.div 
-      className="container mt-5"
+      className="container py-5"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.6 }}
     >
-      <motion.div 
-        className="d-flex justify-content-between align-items-center mb-5"
-        initial={{ y: -20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 0.2, duration: 0.5 }}
-      >
-        <div>
-          <h1 className="page-header display-4 mb-1">
-            <i className="bi bi-briefcase me-3"></i>
-            Professional Diary
-          </h1>
-          <p className="text-muted fs-5 mb-0">Track your professional journey and growth</p>
-        </div>
-        <motion.div
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-        >
-          <Link to="/professional/new" className="btn btn-primary btn-lg px-4 py-3">
-            <i className="bi bi-plus-circle me-2"></i>
-            New Entry
-          </Link>
-        </motion.div>
-      </motion.div>
+      <div className="row justify-content-center">
+        <div className="col-12 col-lg-10 col-xl-8">
+          <motion.div 
+            className="text-center mb-5"
+            initial={{ y: -20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.2, duration: 0.5 }}
+          >
+            <h1 className="page-header display-4 mb-3">
+              <i className="bi bi-briefcase me-3"></i>
+              Professional Diary
+            </h1>
+            <p className="text-muted fs-5">Track your professional journey and growth</p>
+          </motion.div>
 
       {entries.length === 0 ? (
         <motion.div 
           className="text-center py-5"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4, duration: 0.5 }}
+          transition={{ delay: 0.6, duration: 0.5 }}
         >
           <div className="mb-4">
             <i className="bi bi-journal-x display-1 text-muted"></i>
@@ -120,40 +112,68 @@ export default function ProfessionalHome() {
           </motion.div>
         </motion.div>
       ) : (
-        <motion.div 
-          className="row g-4"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.4, duration: 0.5 }}
-        >
+        <>
+          <motion.div 
+            className="text-center mb-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.3, duration: 0.5 }}
+          >
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <Link to="/professional/new" className="btn btn-primary btn-lg px-5 py-3">
+                <i className="bi bi-plus-circle me-2"></i>
+                New Professional Entry
+              </Link>
+            </motion.div>
+          </motion.div>
+
+          <motion.div 
+            className="row g-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.4, duration: 0.5 }}
+          >
           {entries.map((entry, index) => (
             <motion.div 
               key={entry._id} 
-              className="col-12 col-md-6 col-lg-4"
+              className="col-12"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 * index, duration: 0.4 }}
-              whileHover={{ y: -5 }}
             >
-              <div className="card professional-card h-100 shadow-sm">
-                <div className="card-body d-flex flex-column">
+              <div className="card diary-entry-card h-100">
+                <div className="card-body">
                   <div className="d-flex justify-content-between align-items-start mb-3">
-                    <h5 className="card-title text-primary mb-0 flex-grow-1">{entry.title}</h5>
-                    <small className="text-muted ms-2">
+                    <h5 className="card-title text-primary mb-0">{entry.title}</h5>
+                    <small className="text-muted">
                       <i className="bi bi-calendar-event me-1"></i>
-                      {new Date(entry.date).toLocaleDateString('en-US', {
-                        month: 'short',
-                        day: 'numeric'
-                      })}
+                      {new Date(entry.date).toLocaleDateString()}
                     </small>
                   </div>
-                  <p className="card-text text-muted mb-3 flex-grow-1">
-                    {entry.description.length > 120
-                      ? `${entry.description.substring(0, 120)}...`
+                  <p className="card-text text-muted mb-3">
+                    {entry.description.length > 200
+                      ? `${entry.description.substring(0, 200)}...`
                       : entry.description
                     }
                   </p>
-                  <div className="d-flex justify-content-between align-items-center mt-auto">
+                  <div className="d-flex justify-content-between align-items-center">
+                    <div className="d-flex gap-2">
+                      <motion.div
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                      >
+                        <Link
+                          to={`/professional/entry/${entry._id}`}
+                          className="btn btn-outline-primary btn-sm px-3"
+                        >
+                          <i className="bi bi-eye me-1"></i>
+                          View
+                        </Link>
+                      </motion.div>
+                    </div>
                     <small className="text-muted">
                       <i className="bi bi-clock me-1"></i>
                       {new Date(entry.date).toLocaleTimeString('en-US', {
@@ -161,24 +181,13 @@ export default function ProfessionalHome() {
                         minute: '2-digit'
                       })}
                     </small>
-                    <motion.div
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                    >
-                      <Link
-                        to={`/professional/entry/${entry._id}`}
-                        className="btn btn-outline-primary btn-sm px-3"
-                      >
-                        <i className="bi bi-eye me-1"></i>
-                        View Full
-                      </Link>
-                    </motion.div>
                   </div>
                 </div>
               </div>
             </motion.div>
           ))}
         </motion.div>
+        </>
       )}
 
       {entries.length > 0 && (
@@ -194,6 +203,8 @@ export default function ProfessionalHome() {
           </p>
         </motion.div>
       )}
+        </div>
+      </div>
     </motion.div>
   );
 }
