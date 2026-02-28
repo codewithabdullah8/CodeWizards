@@ -15,7 +15,6 @@ const PersonalSchema = new mongoose.Schema({
   positivity: { type: Number, min: 1, max: 5, default: 3 },
   focus: { type: Number, min: 1, max: 5, default: 3 },
   sleep: { type: Number, min: 1, max: 5, default: 3 },
-  emotion: { type: String, enum: ['calm', 'normal', 'low', 'irritated', 'exhausted'], default: 'normal' }
 }, { timestamps: true });
 
 module.exports = mongoose.model('Personal', PersonalSchema);

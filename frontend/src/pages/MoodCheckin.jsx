@@ -172,7 +172,12 @@ export default function MoodCheckin() {
         const d = new Date(startOfWeek);
         d.setDate(startOfWeek.getDate() + i);
 
-        const dateStr = d.toISOString().split("T")[0];
+        // Use local date string instead of ISO string to avoid timezone issues
+        const year = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const dayNum = String(d.getDate()).padStart(2, '0');
+        const dateStr = `${year}-${month}-${dayNum}`;
+        
         const found = data.find(m => m.date === dateStr);
         const isFuture = d > today;
 
@@ -252,6 +257,28 @@ export default function MoodCheckin() {
     } finally {
       setHistoryLoading(false);
     }
+  };
+
+  // Group weekly analyses by month
+  const groupByMonth = (weeks) => {
+    const grouped = {};
+    weeks.forEach(week => {
+      const startDate = new Date(week.startDate);
+      const monthKey = `${startDate.getFullYear()}-${String(startDate.getMonth() + 1).padStart(2, '0')}`;
+      const monthName = startDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+      
+      if (!grouped[monthKey]) {
+        grouped[monthKey] = {
+          monthName,
+          weeks: [],
+          sortDate: startDate
+        };
+      }
+      grouped[monthKey].weeks.push(week);
+    });
+    
+    // Convert to array and sort by date (newest first)
+    return Object.values(grouped).sort((a, b) => b.sortDate - a.sortDate);
   };
 
   return (
@@ -632,44 +659,6 @@ export default function MoodCheckin() {
                   </div>
                 </div>
               </div>
-
-              <motion.div
-                className="mood-panel mood-panel--insight"
-                initial={{ y: 10, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ duration: 0.6, delay: 0.5 }}
-              >
-                <div className="insight-header">
-                  <i className="bi bi-lightbulb-fill"></i>
-                  Weekly Insight
-                </div>
-                {weeklyAnalysis ? (
-                  <>
-                    <p>{generateInsights(weeklyAnalysis).main}</p>
-                    <div className="insight-actions">
-                      {generateInsights(weeklyAnalysis).actionItems.map((item, idx) => (
-                        <button
-                          key={idx}
-                          className="btn btn-sm btn-outline-light"
-                          style={{
-                            fontSize: "12px",
-                            whiteSpace: "normal",
-                            wordWrap: "break-word",
-                            padding: "8px 12px",
-                            lineHeight: "1.3",
-                          }}
-                        >
-                          {item}
-                        </button>
-                      ))}
-                    </div>
-                  </>
-                ) : (
-                  <p style={{ color: "#aaa", fontSize: "14px" }}>
-                    Complete your mood check-in to see personalized insights.
-                  </p>
-                )}
-              </motion.div>
             </div>
           </div>
         </div>
@@ -691,7 +680,7 @@ export default function MoodCheckin() {
           alignItems: "center",
           gap: "10px",
         }}>
-          📊 Weekly Mood History
+          📊 Monthly Mood History
         </h2>
         
         {historyLoading ? (
@@ -711,144 +700,163 @@ export default function MoodCheckin() {
           <div className="card" style={{ padding: "40px", textAlign: "center" }}>
             <div style={{ fontSize: "3rem", marginBottom: "15px" }}>📭</div>
             <p style={{ color: "var(--text-secondary)", fontSize: "1.1rem" }}>
-              No historical data yet. Complete a full week to see your mood history!
+              No historical data yet. Start tracking your mood to see your monthly history!
             </p>
           </div>
         ) : (
-          <div style={{ display: "grid", gap: "20px" }}>
-            {history.map((week, idx) => {
-              const startDate = new Date(week.startDate);
-              const endDate = new Date(week.endDate);
-              const dateRange = `${startDate.toLocaleDateString("en-US", { month: "short", day: "numeric" })} - ${endDate.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}`;
-              
-              return (
-                <motion.div
-                  key={idx}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.3, delay: idx * 0.1 }}
-                  className="card"
-                  style={{
-                    overflow: "hidden",
-                    borderLeft: `4px solid ${
-                      week.overallMood === "happy" ? "#10b981" :
-                      week.overallMood === "sad" ? "#8b5cf6" :
-                      week.overallMood === "anxious" ? "#f59e0b" :
-                      week.overallMood === "angry" ? "#f87171" :
-                      "#60a5fa"
-                    }`,
-                  }}
-                >
-                  <div className="card-body" style={{ padding: "1.5rem" }}>
-                    {/* Header */}
-                    <div style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "flex-start",
-                      marginBottom: "20px",
-                      flexWrap: "wrap",
-                      gap: "15px",
-                    }}>
-                      <div style={{ flex: "1 1 300px" }}>
-                        <div style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "10px",
-                          marginBottom: "8px",
-                        }}>
-                          <span style={{ fontSize: "2rem" }}>
-                            {moodEmoji[week.overallMood] || "😐"}
-                          </span>
-                          <h4 style={{
-                            margin: "0",
-                            fontSize: "1.3rem",
-                            fontWeight: "700",
-                            color: "var(--text-primary)",
-                            textTransform: "capitalize",
-                          }}>
-                            {week.overallMood}
-                          </h4>
-                        </div>
-                        <p style={{
-                          margin: "0",
-                          fontSize: "0.9rem",
-                          color: "var(--text-secondary)",
-                        }}>
-                          Week {week.weekId} • {dateRange}
-                        </p>
-                      </div>
-                      
-                      <div style={{
-                        display: "flex",
-                        gap: "10px",
-                        flexWrap: "wrap",
-                      }}>
-                        <div style={{
-                          padding: "8px 16px",
-                          borderRadius: "8px",
-                          background: "linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)",
-                          color: "#fff",
-                          fontSize: "0.9rem",
-                          fontWeight: "600",
-                        }}>
-                          ⭐ {week.averageScore}/5
-                        </div>
-                        <div style={{
-                          padding: "8px 16px",
-                          borderRadius: "8px",
-                          background: "var(--bg-secondary)",
-                          color: "var(--text-primary)",
-                          fontSize: "0.9rem",
-                          fontWeight: "600",
-                        }}>
-                          🔥 {week.streak} days
-                        </div>
-                        <div style={{
-                          padding: "8px 16px",
-                          borderRadius: "8px",
-                          background: "var(--bg-secondary)",
-                          color: "var(--text-primary)",
-                          fontSize: "0.9rem",
-                          fontWeight: "600",
-                        }}>
-                          📊 {week.variability}
-                        </div>
-                      </div>
-                    </div>
+          <div style={{ display: "grid", gap: "40px" }}>
+            {groupByMonth(history).map((monthGroup, monthIdx) => (
+              <div key={monthIdx}>
+                {/* Month Header */}
+                <h3 style={{
+                  fontSize: "1.5rem",
+                  fontWeight: "600",
+                  color: "var(--text-primary)",
+                  marginBottom: "20px",
+                  paddingBottom: "10px",
+                  borderBottom: "2px solid #e2e8f0",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "10px",
+                }}>
+                  📅 {monthGroup.monthName}
+                </h3>
+                
+                {/* Weeks in this month */}
+                <div style={{ display: "grid", gap: "20px" }}>
+                  {monthGroup.weeks.map((week, idx) => {
+                    const startDate = new Date(week.startDate);
+                    const endDate = new Date(week.endDate);
+                    const dateRange = `${startDate.toLocaleDateString("en-US", { month: "short", day: "numeric" })} - ${endDate.toLocaleDateString("en-US", { month: "short", day: "numeric" })}`;
                     
-                    {/* Distribution */}
-                    <div style={{ marginBottom: "15px" }}>
-                      <p style={{
-                        fontWeight: "600",
-                        color: "var(--text-primary)",
-                        marginBottom: "12px",
-                        fontSize: "0.95rem",
-                      }}>
-                        Mood Distribution
-                      </p>
-                      <div style={{
-                        display: "grid",
-                        gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))",
-                        gap: "10px",
-                      }}>
+                    return (
+                      <motion.div
+                        key={idx}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.3, delay: idx * 0.05 }}
+                        className="card"
+                        style={{
+                          overflow: "hidden",
+                          borderLeft: `4px solid ${
+                            week.overallMood === "happy" ? "#10b981" :
+                            week.overallMood === "sad" ? "#8b5cf6" :
+                            week.overallMood === "anxious" ? "#f59e0b" :
+                            week.overallMood === "angry" ? "#f87171" :
+                            "#60a5fa"
+                          }`,
+                        }}
+                      >
+                        <div className="card-body" style={{ padding: "1.5rem" }}>
+                          {/* Header */}
+                          <div style={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "flex-start",
+                            marginBottom: "20px",
+                            flexWrap: "wrap",
+                            gap: "15px",
+                          }}>
+                            <div style={{ flex: "1 1 300px" }}>
+                              <div style={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "10px",
+                                marginBottom: "8px",
+                              }}>
+                                <span style={{ fontSize: "2rem" }}>
+                                  {moodEmoji[week.overallMood] || "😐"}
+                                </span>
+                                <h4 style={{
+                                  margin: "0",
+                                  fontSize: "1.3rem",
+                                  fontWeight: "700",
+                                  color: "var(--text-primary)",
+                                  textTransform: "capitalize",
+                                }}>
+                                  {week.overallMood}
+                                </h4>
+                              </div>
+                              <p style={{
+                                margin: "0",
+                                fontSize: "0.9rem",
+                                color: "var(--text-secondary)",
+                              }}>
+                                {dateRange}
+                              </p>
+                            </div>
+                            
+                            <div style={{
+                              display: "flex",
+                              gap: "10px",
+                              flexWrap: "wrap",
+                            }}>
+                              <div style={{
+                                padding: "8px 16px",
+                                borderRadius: "8px",
+                                background: "linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)",
+                                color: "#fff",
+                                fontSize: "0.9rem",
+                                fontWeight: "600",
+                              }}>
+                                ⭐ {week.averageScore}/5
+                              </div>
+                              <div style={{
+                                padding: "8px 16px",
+                                borderRadius: "8px",
+                                background: "var(--bg-secondary)",
+                                color: "var(--text-primary)",
+                                fontSize: "0.9rem",
+                                fontWeight: "600",
+                              }}>
+                                🔥 {week.streak} days
+                              </div>
+                              <div style={{
+                                padding: "8px 16px",
+                                borderRadius: "8px",
+                                background: "var(--bg-secondary)",
+                                color: "var(--text-primary)",
+                                fontSize: "0.9rem",
+                                fontWeight: "600",
+                              }}>
+                                📊 {week.variability}
+                              </div>
+                            </div>
+                          </div>
+                          
+                          {/* Distribution */}
+                          <div style={{ marginBottom: "15px" }}>
+                            <p style={{
+                              fontWeight: "600",
+                              color: "var(--text-primary)",
+                              marginBottom: "12px",
+                              fontSize: "0.95rem",
+                            }}>
+                              Mood Distribution
+                            </p>
+                            <div style={{
+                              display: "grid",
+                              gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))",
+                              gap: "10px",
+                            }}>
                         <div style={{
                           padding: "10px",
                           borderRadius: "8px",
                           background: "var(--bg-secondary)",
                           textAlign: "center",
                         }}>
-                          <div style={{ fontSize: "1.5rem", marginBottom: "5px" }}>😄</div>
-                          <div style={{
-                            fontSize: "0.85rem",
-                            color: "var(--text-secondary)",
-                            marginBottom: "3px",
-                          }}>Joyful</div>
-                          <div style={{
-                            fontSize: "1.1rem",
-                            fontWeight: "700",
-                            color: "#10b981",
-                          }}>{week.distribution.joyful}%</div>
-                        </div>
+                                <div style={{ fontSize: "1.5rem", marginBottom: "5px" }}>😄</div>
+                                <div style={{
+                                  fontSize: "0.85rem",
+                                  color: "var(--text-secondary)",
+                                  marginBottom: "3px",
+                                }}>Joyful</div>
+                                <div style={{
+                                  fontSize: "1.1rem",
+                                  fontWeight: "700",
+                                  color: "#10b981",
+                                }}>{week.distribution.joyful}%</div>
+                              </div>
                         <div style={{
                           padding: "10px",
                           borderRadius: "8px",
@@ -946,6 +954,9 @@ export default function MoodCheckin() {
               );
             })}
           </div>
+        </div>
+      ))}
+    </div>
         )}
       </motion.div>
     </div>

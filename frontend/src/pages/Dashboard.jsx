@@ -31,6 +31,8 @@ export default function Dashboard() {
     author: "Abraham Lincoln",
   });
 
+  const [weeklyAnalysis, setWeeklyAnalysis] = useState(null);
+
 const loadQuote = async () => {
   try {
     const { data } = await QuoteAPI.getToday();
@@ -49,6 +51,93 @@ const loadTodayReminder = async () => {
   } catch (err) {
     console.error("Reminder error", err);
   }
+};
+
+const loadWeeklyAnalysis = async () => {
+  try {
+    const { data } = await API.get("/mood/analysis/week");
+    setWeeklyAnalysis(data);
+  } catch (err) {
+    console.error("Weekly analysis error", err);
+  }
+};
+
+const getMoodEmoji = (mood) => {
+  const moodEmojiMap = {
+    happy: "😄",
+    sad: "😔",
+    angry: "😠",
+    anxious: "😰",
+    neutral: "😐",
+    calm: "😌",
+    tired: "😴",
+    none: "😐",
+  };
+  return moodEmojiMap[mood?.toLowerCase()] || "😐";
+};
+
+const generateInsights = (analysis) => {
+  if (!analysis) return null;
+
+  const insights = {
+    main: "",
+    actionItems: [],
+  };
+
+  const { distribution, dailyTrend, peakDay, averageScore, variability, streak } = analysis;
+
+  const firstThree = dailyTrend.slice(0, 3).filter(s => s > 0);
+  const lastThree = dailyTrend.slice(4).filter(s => s > 0);
+  const firstAvg = firstThree.length > 0 ? firstThree.reduce((a, b) => a + b) / firstThree.length : 0;
+  const lastAvg = lastThree.length > 0 ? lastThree.reduce((a, b) => a + b) / lastThree.length : 0;
+
+  if (streak === 0) {
+    insights.main = "Start logging your mood to get personalized insights. Consistency is key to understanding your patterns.";
+    insights.actionItems = ["Log your first mood check-in", "Set a daily reminder for mood check-ins"];
+  } else if (averageScore >= 4) {
+    if (lastAvg > firstAvg) {
+      insights.main = `Great week! You ended strong with a ${lastAvg > firstAvg ? "positive" : "steady"} trend. Your peak day was ${peakDay}—try to replicate that day's activities.`;
+      insights.actionItems = [
+        "Document what made " + peakDay + " so great",
+        "Maintain your current routine those days",
+      ];
+    } else {
+      insights.main = `Strong start to your week! You averaged ${averageScore.toFixed(1)}/5 across ${streak} logged days. ${peakDay} was your best—consistency helps.`;
+      insights.actionItems = ["Reflect on what went well", "Prepare for the week ahead"];
+    }
+  } else if (averageScore >= 3) {
+    if (variability === "High") {
+      insights.main = `Your week had ups and downs (${averageScore.toFixed(1)}/5 avg). High variability suggests external factors. Identify what causes your mood swings.`;
+      insights.actionItems = [
+        "Track mood triggers on challenging days",
+        "Stabilize your routine on low-mood days",
+      ];
+    } else {
+      insights.main = `Balanced week at ${averageScore.toFixed(1)}/5 average. Your mood stayed relatively stable. Peak was ${peakDay}—good consistency!`;
+      insights.actionItems = ["Maintain this stability", "Explore what one small change could help you rise above 4"];
+    }
+  } else {
+    insights.main = `Challenging week at ${averageScore.toFixed(1)}/5 average. ${
+      distribution.low > 30 ? "Low moods dominated." : "Mixed feelings throughout."
+    } Consider what's weighing on you and take small breaks.`;
+    insights.actionItems = [
+      "Reach out to someone you trust",
+      "Try a stress-relief activity (walk, music, meditation)",
+      "Review what affected " + (peakDay || "your best moment"),
+    ];
+  }
+
+  if (distribution.anxious > 40) {
+    insights.actionItems.push("Practice breathing exercises or meditation");
+  }
+  if (distribution.frustrated > 30) {
+    insights.actionItems.push("Take breaks when feeling overloaded");
+  }
+  if (distribution.joyful > 40) {
+    insights.actionItems.push("Capture these positive moments in your diary");
+  }
+
+  return insights;
 };
 
 // Schedule calendar integration
@@ -111,6 +200,7 @@ const updateDaysWithEvents = (items, dateToCheck) => {
   loadQuote();
   loadTodayReminder();
   loadScheduleItems();
+  loadWeeklyAnalysis();
 }, []);
 
  useEffect(() => {
@@ -372,6 +462,76 @@ const updateDaysWithEvents = (items, dateToCheck) => {
                       {quote.author}
                     </footer>
                   </blockquote>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Weekly Insight Section */}
+            <motion.div
+              className="card border-0 mt-4"
+              style={{
+                boxShadow: '0 8px 24px rgba(102, 126, 234, 0.12)',
+                borderRadius: '16px',
+                overflow: 'hidden',
+                background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.95) 100%)'
+              }}
+              initial={{ x: 20, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              transition={{ delay: 0.3, duration: 0.5 }}
+            >
+              <div className="card-body p-0">
+                {/* Weekly Insight Header */}
+                <div style={{
+                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  padding: '16px 24px',
+                  color: 'white',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px'
+                }}>
+                  <i className="bi bi-lightbulb-fill" style={{ fontSize: '20px', opacity: '0.9' }}></i>
+                  <span style={{ fontWeight: '600', fontSize: '14px' }}>Weekly Insight</span>
+                </div>
+                
+                {/* Weekly Insight Content */}
+                <div style={{ padding: '24px' }}>
+                  {weeklyAnalysis ? (
+                    <>
+                      <p style={{
+                        fontSize: '16px',
+                        color: '#1e293b',
+                        lineHeight: '1.6',
+                        marginBottom: '16px'
+                      }}>
+                        {generateInsights(weeklyAnalysis).main}
+                      </p>
+                      <div style={{
+                        display: 'flex',
+                        flexWrap: 'wrap',
+                        gap: '8px'
+                      }}>
+                        {generateInsights(weeklyAnalysis).actionItems.map((item, idx) => (
+                          <button
+                            key={idx}
+                            className="btn btn-sm btn-outline-primary"
+                            style={{
+                              fontSize: '12px',
+                              whiteSpace: 'normal',
+                              wordWrap: 'break-word',
+                              padding: '8px 12px',
+                              lineHeight: '1.3',
+                            }}
+                          >
+                            {item}
+                          </button>
+                        ))}
+                      </div>
+                    </>
+                  ) : (
+                    <p style={{ color: '#aaa', fontSize: '14px', margin: 0 }}>
+                      Complete your mood check-in to see personalized insights.
+                    </p>
+                  )}
                 </div>
               </div>
             </motion.div>

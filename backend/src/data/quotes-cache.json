@@ -1,10 +1,18 @@
 {
-  "date": "2026-02-26",
+  "date": "2026-02-28",
   "quote": {
-    "text": "A clever person turns great troubles into little ones, and little ones into none at all. ",
-    "author": "Chinese Proverb"
+    "text": "Your next step is simple. You are the first domino.",
+    "author": "Gary Keller"
   },
   "history": [
+    {
+      "text": "Your next step is simple. You are the first domino.",
+      "author": "Gary Keller"
+    },
+    {
+      "text": "The secret of change is to focus all your energy not on fighting the old, but on building the new.",
+      "author": "Dan Millman"
+    },
     {
       "text": "A clever person turns great troubles into little ones, and little ones into none at all. ",
       "author": "Chinese Proverb"

@@ -116,7 +116,19 @@ export default function RecentEntries() {
             ? entry.navigatePath(entry)
             : entry.navigatePath,
         }))
-        .sort((a, b) => b.sortTimestamp - a.sortTimestamp);
+        .sort((a, b) => {
+          // Primary sort by timestamp descending
+          if (b.sortTimestamp !== a.sortTimestamp) {
+            return b.sortTimestamp - a.sortTimestamp;
+          }
+          // Secondary sort by MongoDB ObjectId (contains timestamp)
+          // ObjectIds that are created later are numerically larger
+          const aId = String(a.id || a._id || '');
+          const bId = String(b.id || b._id || '');
+          if (aId > bId) return -1;
+          if (aId < bId) return 1;
+          return 0;
+        });
 
       setRecentEntries(finalEntries);
       setError(errors.length === results.length ? 'Could not load recent entries' : '');
