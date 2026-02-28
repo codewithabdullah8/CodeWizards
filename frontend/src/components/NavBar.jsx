@@ -12,7 +12,6 @@ export default function Navbar({ user, onLogout }) {
     { path: "/personal", label: "Personal", icon: "bi-journal-text" },
     { path: "/recent", label: "Recent Entries", icon: "bi-clock-history" },
     { path: "/professional", label: "Professional", icon: "bi-briefcase" },
-    { path: "/schedule", label: "Schedule", icon: "bi-calendar" },
     { path: "/mood-checkin", label: "Mood Check‑in", icon: "bi-emoji-smile" }
   ];
 

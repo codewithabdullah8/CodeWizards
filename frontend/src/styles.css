@@ -176,6 +176,79 @@ body {
     box-shadow: 0 4px 12px var(--shadow-purple);
 }
 
+.personal-mood-questions {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+}
+
+.personal-mood-questions label {
+    color: var(--text-primary);
+}
+
+.personal-mood-grid {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 20px;
+    overflow-x: auto;
+    padding-bottom: 6px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(59, 130, 246, 0.55) rgba(148, 163, 184, 0.2);
+}
+
+.personal-mood-grid::-webkit-scrollbar {
+    height: 8px;
+}
+
+.personal-mood-grid::-webkit-scrollbar-track {
+    background: rgba(148, 163, 184, 0.2);
+    border-radius: 999px;
+}
+
+.personal-mood-grid::-webkit-scrollbar-thumb {
+    background: rgba(59, 130, 246, 0.55);
+    border-radius: 999px;
+}
+
+.personal-mood-grid::-webkit-scrollbar-thumb:hover {
+    background: rgba(59, 130, 246, 0.75);
+}
+
+.personal-mood-item {
+    min-width: 140px;
+    flex: 1 1 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.personal-mood-slider-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.personal-mood-slider {
+    writing-mode: vertical-lr;
+    direction: rtl;
+    width: 20px;
+    height: 130px;
+    cursor: pointer;
+    accent-color: var(--primary-blue);
+}
+
+.personal-mood-scale {
+    color: var(--text-secondary);
+    font-size: 0.82rem;
+    font-weight: 600;
+}
+
+.personal-mood-value {
+    color: var(--text-primary);
+    font-weight: 700;
+    margin-top: 8px;
+}
+
 /* Custom animations */
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(20px); }
@@ -363,6 +436,84 @@ body.dark-mode {
     border-color: #7c3aed;
     background: rgba(51, 65, 85, 0.9);
     box-shadow: 0 0 0 0.2rem rgba(124, 58, 237, 0.25);
+}
+
+.dark-mode .personal-mood-questions {
+    background: rgba(30, 41, 59, 0.7);
+    border-color: rgba(71, 85, 105, 0.45);
+}
+
+.dark-mode .personal-mood-slider {
+    accent-color: #a78bfa;
+}
+
+.dark-mode .personal-mood-grid {
+    scrollbar-color: rgba(167, 139, 250, 0.7) rgba(71, 85, 105, 0.35);
+}
+
+.dark-mode .personal-mood-grid::-webkit-scrollbar-track {
+    background: rgba(71, 85, 105, 0.35);
+}
+
+.dark-mode .personal-mood-grid::-webkit-scrollbar-thumb {
+    background: rgba(167, 139, 250, 0.7);
+}
+
+.dark-mode .personal-mood-grid::-webkit-scrollbar-thumb:hover {
+    background: rgba(167, 139, 250, 0.9);
+}
+
+/* Professional Tips Box */
+.professional-tips-box {
+    background: var(--light-blue);
+    border-radius: 16px;
+    padding: 1.5rem;
+}
+
+.professional-tips-icon {
+    color: var(--primary-blue);
+    flex-shrink: 0;
+}
+
+.professional-tips-title {
+    color: var(--primary-blue);
+}
+
+.professional-tips-box ul {
+    color: var(--text-primary);
+}
+
+.professional-tips-box li {
+    color: var(--text-primary);
+}
+
+.professional-tips-text {
+    color: var(--text-secondary);
+}
+
+.dark-mode .professional-tips-box {
+    background: rgba(30, 41, 59, 0.7);
+    border: 1px solid rgba(124, 58, 237, 0.2);
+}
+
+.dark-mode .professional-tips-icon {
+    color: #a78bfa;
+}
+
+.dark-mode .professional-tips-title {
+    color: #a78bfa;
+}
+
+.dark-mode .professional-tips-box ul {
+    color: #f1f5f9;
+}
+
+.dark-mode .professional-tips-box li {
+    color: #f1f5f9;
+}
+
+.dark-mode .professional-tips-text {
+    color: #cbd5e1;
 }
 
 .dark-mode .btn-primary {
@@ -1533,11 +1684,14 @@ html {
     font-weight: 600;
     color: #1f2337;
     background: transparent;
-    pointer-events: none;
+    pointer-events: auto;
+    cursor: pointer;
 }
 
 .calendar-widget__day.is-empty {
     opacity: 0;
+    pointer-events: none;
+    cursor: default;
 }
 
 .calendar-widget__day.is-today {
@@ -1659,6 +1813,9 @@ html {
     transition: all 0.2s ease;
     padding: 0;
     font-size: 14px;
+    z-index: 10;
+    position: relative;
+    pointer-events: auto;
 }
 
 .btn-close-events:hover {
@@ -1689,7 +1846,7 @@ html {
 
 .event-time {
     font-size: 0.8rem;
-    color: #94a3b8;
+    color: var(--text-secondary);
     margin-bottom: 0.25rem;
     font-weight: 600;
     text-transform: uppercase;
@@ -1699,13 +1856,13 @@ html {
 .event-title {
     font-size: 0.95rem;
     font-weight: 700;
-    color: #1e293b;
+    color: var(--text-primary);
     margin-bottom: 0.25rem;
 }
 
 .event-description {
     font-size: 0.8rem;
-    color: #64748b;
+    color: var(--text-secondary);
     margin-bottom: 0.5rem;
     line-height: 1.4;
 }
@@ -1774,17 +1931,18 @@ html {
     border-color: rgba(102, 126, 234, 0.3);
 }
 
-.dark-mode .event-title {
-    color: #f1f5f9;
-}
-
-.dark-mode .event-description,
-.dark-mode .event-time {
-    color: #cbd5e1;
-}
-
 .dark-mode .events-empty {
     color: #64748b;
+}
+
+.dark-mode .btn-close-events {
+    background: rgba(168, 85, 247, 0.15);
+    color: #c084fc;
+}
+
+.dark-mode .btn-close-events:hover {
+    background: rgba(168, 85, 247, 0.25);
+    color: #d8b4fe;
 }
 
 /* Attractive Small Quote Card */

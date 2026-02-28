@@ -21,7 +21,6 @@ import Dashboard from "./pages/Dashboard";
 import DiaryEntry from "./pages/DiaryEntry";
 import Personal from "./pages/Personal";
 import ProfessionalHome from "./pages/ProfessionalDiary/Home";
-import Schedule from "./pages/Schedule";
 import ProfessionalNewEntry from "./pages/ProfessionalDiary/NewEntry";
 import ProfessionalViewEntry from "./pages/ProfessionalDiary/ViewEntry";
 import RecentEntries from "./pages/RecentEntries";
@@ -162,15 +161,6 @@ function AppContent() {
             element={
               <Protected>
                 <ProfessionalViewEntry />
-              </Protected>
-            }
-          />
-
-          <Route
-            path="/schedule"
-            element={
-              <Protected>
-                <Schedule />
               </Protected>
             }
           />

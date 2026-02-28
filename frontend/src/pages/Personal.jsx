@@ -9,6 +9,21 @@ export default function Personal() {
   const [error, setError] = useState('');
   const [showCreate, setShowCreate] = useState(false);
   const [selectedEntry, setSelectedEntry] = useState(null);
+  const [moodAnswers, setMoodAnswers] = useState({
+    energy: 3,
+    stress: 3,
+    positivity: 3,
+    focus: 3,
+    sleep: 3,
+  });
+
+  const moodQuestions = [
+    { key: 'energy', label: '⚡ Energy' },
+    { key: 'stress', label: '😰 Stress' },
+    { key: 'positivity', label: '✨ Positivity' },
+    { key: 'focus', label: '🎯 Focus' },
+    { key: 'sleep', label: '😴 Sleep' },
+  ];
 
 
 
@@ -138,39 +153,56 @@ export default function Personal() {
           <AnimatePresence>
             {showCreate && (
               <motion.div 
-                className="create-form mb-4"
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
+                className="card shadow-lg mb-4"
+                initial={{ opacity: 0, scale: 0.95, y: -20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: -20 }}
                 transition={{ duration: 0.3 }}
+                style={{
+                  border: '2px solid #3b82f6',
+                  borderRadius: '16px',
+                }}
               >
-                <div className="d-flex justify-content-between align-items-center mb-4">
-                  <h4 className="mb-0 text-primary">
+                <div className="card-header bg-primary text-white d-flex justify-content-between align-items-center" style={{ borderRadius: '14px 14px 0 0' }}>
+                  <h4 className="mb-0">
                     <i className="bi bi-plus-circle me-2"></i>
-                    Create New Entry
+                    Create New Personal Entry
                   </h4>
                   <button
-                    className="icon-btn btn btn-outline-secondary"
+                    className="btn btn-sm btn-light"
                     onClick={() => setShowCreate(false)}
                     title="Cancel"
                   >
-                    <i className="bi bi-x"></i>
+                    <i className="bi bi-x-lg"></i>
                   </button>
                 </div>
 
-                <form
+                <div className="card-body" style={{ padding: '2rem' }}>
+                  <form
                   onSubmit={async (e) => {
                     e.preventDefault();
                     const form = e.target;
                     const payload = {
                       title: form.title.value,
                       content: form.content.value,
+                      energy: moodAnswers.energy,
+                      stress: moodAnswers.stress,
+                      positivity: moodAnswers.positivity,
+                      focus: moodAnswers.focus,
+                      sleep: moodAnswers.sleep,
                     };
 
                     try {
                       const { data } = await PersonalAPI.createEntry(payload);
                       setEntries([data, ...entries]);
                       setShowCreate(false);
+                      setMoodAnswers({
+                        energy: 3,
+                        stress: 3,
+                        positivity: 3,
+                        focus: 3,
+                        sleep: 3,
+                      });
                       form.reset();
                     } catch (err) {
                       alert("Failed to create entry");
@@ -204,6 +236,43 @@ export default function Personal() {
                     />
                   </div>
 
+                  {/* MOOD CHECK-IN QUESTIONS (OPTIONAL) */}
+                  <div className="mb-4 p-4 rounded personal-mood-questions">
+                    <h5 className="text-primary mb-4">
+                      <i className="bi bi-emoji-smile me-2"></i>
+                      How are you feeling today?
+                      <span className="text-muted ms-2" style={{ fontSize: '0.85rem', fontWeight: 'normal' }}>(Optional)</span>
+                    </h5>
+
+                    {/* MOOD QUESTIONS GRID */}
+                    <div className="personal-mood-grid">
+                      {moodQuestions.map(({ key, label }) => (
+                        <div key={key} className="personal-mood-item">
+                          <label className="form-label fw-bold text-center d-block mb-2">
+                            {label}
+                          </label>
+                          <div className="personal-mood-slider-wrap">
+                            <span className="personal-mood-scale">5</span>
+                            <input
+                              type="range"
+                              min="1"
+                              max="5"
+                              step="1"
+                              value={moodAnswers[key]}
+                              onChange={(e) =>
+                                setMoodAnswers((prev) => ({ ...prev, [key]: Number(e.target.value) }))
+                              }
+                              className="personal-mood-slider"
+                              aria-label={`${label} level`}
+                            />
+                            <span className="personal-mood-scale">1</span>
+                          </div>
+                          <div className="personal-mood-value">{moodAnswers[key]}/5</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
                   <div className="d-flex gap-3 justify-content-end">
                     <motion.button 
                       className="btn btn-outline-secondary px-4"
@@ -226,26 +295,29 @@ export default function Personal() {
                     </motion.button>
                   </div>
                 </form>
+                </div>
               </motion.div>
             )}
           </AnimatePresence>
 
-          <motion.div 
-            className="d-flex justify-content-center mb-4"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.4, duration: 0.5 }}
-          >
-            <motion.button
-              className="btn btn-primary btn-lg px-5 py-3"
-              onClick={() => setShowCreate(true)}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+          {!showCreate && (
+            <motion.div 
+              className="d-flex justify-content-center mb-4"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.4, duration: 0.5 }}
             >
-              <i className="bi bi-plus-circle me-2 fs-5"></i>
-              New Personal Entry
-            </motion.button>
-          </motion.div>
+              <motion.button
+                className="btn btn-primary btn-lg px-5 py-3"
+                onClick={() => setShowCreate(true)}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <i className="bi bi-plus-circle me-2 fs-5"></i>
+                New Personal Entry
+              </motion.button>
+            </motion.div>
+          )}
 
           {entries.length === 0 ? (
             <motion.div 
@@ -259,17 +331,8 @@ export default function Personal() {
               </div>
               <h4 className="text-muted mb-3">No personal entries yet</h4>
               <p className="text-muted mb-4 fs-5">
-                Start your personal journey by creating your first diary entry.
+                Start your personal journey by creating your first diary entry using the button above.
               </p>
-              <motion.button
-                className="btn btn-primary btn-lg px-5 py-3"
-                onClick={() => setShowCreate(true)}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <i className="bi bi-plus-circle me-2"></i>
-                Create Your First Entry
-              </motion.button>
             </motion.div>
           ) : (
             <motion.div 
@@ -281,48 +344,59 @@ export default function Personal() {
               {entries.map((entry, index) => (
                 <motion.div 
                   key={entry._id} 
-                  className="col-12"
+                  className="col-12 col-md-6 col-lg-4"
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.1 * index, duration: 0.4 }}
+                  transition={{ delay: 0.05 * index, duration: 0.4 }}
+                  whileHover={{ scale: 1.03 }}
                 >
-                  <div className="card diary-entry-card h-100">
-                    <div className="card-body">
-                      <div className="d-flex justify-content-between align-items-start mb-3">
-                        <h5 className="card-title text-primary mb-0">{entry.title}</h5>
-                        <small className="text-muted">
-                          <i className="bi bi-calendar-event me-1"></i>
-                          {new Date(entry.date).toLocaleDateString()}
-                        </small>
+                  <div className="card diary-entry-card h-100 shadow-sm" style={{ transition: 'all 0.3s ease' }}>
+                    <div className="card-body d-flex flex-column">
+                      <div className="d-flex justify-content-between align-items-start mb-2">
+                        <h5 className="card-title text-primary mb-0" style={{
+                          display: '-webkit-box',
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: 'vertical',
+                          overflow: 'hidden',
+                          fontSize: '1.1rem'
+                        }}>{entry.title}</h5>
                       </div>
-                      <p className="card-text text-muted mb-3">
-                        {entry.content.length > 200 
-                          ? `${entry.content.substring(0, 200)}...` 
-                          : entry.content
-                        }
+                      <small className="text-muted mb-3">
+                        <i className="bi bi-calendar-event me-1"></i>
+                        {new Date(entry.date).toLocaleDateString()}
+                      </small>
+                      <p className="card-text text-muted mb-3 flex-grow-1" style={{
+                        display: '-webkit-box',
+                        WebkitLineClamp: 4,
+                        WebkitBoxOrient: 'vertical',
+                        overflow: 'hidden',
+                        minHeight: '80px'
+                      }}>
+                        {entry.content}
                       </p>
-                      <div className="d-flex justify-content-between align-items-center">
-                        <div className="d-flex gap-2">
-                          <motion.button
-                            className="btn btn-outline-primary btn-sm px-3"
-                            onClick={() => setSelectedEntry(entry)}
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                          >
-                            <i className="bi bi-eye me-1"></i>
-                            View
-                          </motion.button>
-                          <motion.button 
-                            onClick={() => deleteEntry(entry._id)} 
-                            className="btn btn-outline-danger btn-sm px-3"
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                          >
-                            <i className="bi bi-trash me-1"></i>
-                            Delete
-                          </motion.button>
+                      <div className="mt-auto">
+                        <div className="d-flex justify-content-between align-items-center mb-2">
+                          <div className="d-flex gap-2">
+                            <motion.button
+                              className="btn btn-outline-primary btn-sm px-3"
+                              onClick={() => setSelectedEntry(entry)}
+                              whileHover={{ scale: 1.05 }}
+                              whileTap={{ scale: 0.95 }}
+                            >
+                              <i className="bi bi-eye me-1"></i>
+                              View
+                            </motion.button>
+                            <motion.button 
+                              onClick={() => deleteEntry(entry._id)} 
+                              className="btn btn-outline-danger btn-sm px-3"
+                              whileHover={{ scale: 1.05 }}
+                              whileTap={{ scale: 0.95 }}
+                            >
+                              <i className="bi bi-trash me-1"></i>
+                            </motion.button>
+                          </div>
                         </div>
-                        <small className="text-muted">
+                        <small className="text-muted d-block text-end">
                           <i className="bi bi-clock me-1"></i>
                           {new Date(entry.date).toLocaleTimeString('en-US', {
                             hour: '2-digit',

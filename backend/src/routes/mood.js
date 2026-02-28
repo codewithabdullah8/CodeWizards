@@ -4,10 +4,18 @@ const Mood = require("../models/mood");
 const WeeklyAnalysis = require("../models/WeeklyAnalysis");
 const auth = require("../middleware/auth");
 
+// Helper function to get local date string (YYYY-MM-DD) without timezone conversion
+function getLocalDateString(date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
 // POST – Save or update today's mood
 router.post("/", auth, async (req, res) => {
   const userId = req.user.id;
-  const today = new Date().toISOString().split("T")[0];
+  const today = getLocalDateString(new Date());
 
   const result = calculateMood(req.body.answers);
 
@@ -44,8 +52,8 @@ router.get("/week", auth, async (req, res) => {
     endOfWeek.setDate(startOfWeek.getDate() + 6);
     endOfWeek.setHours(23, 59, 59, 999);
     
-    const startDate = startOfWeek.toISOString().split("T")[0];
-    const endDate = endOfWeek.toISOString().split("T")[0];
+    const startDate = getLocalDateString(startOfWeek);
+    const endDate = getLocalDateString(endOfWeek);
     
     const moods = await Mood.find({
       user: userId,
@@ -80,10 +88,10 @@ router.get("/analysis/week", auth, async (req, res) => {
     startOfWeek.setDate(today.getDate() - ((dayOfWeek + 6) % 7));
     startOfWeek.setHours(0, 0, 0, 0);
     
-    const startDate = startOfWeek.toISOString().split("T")[0];
+    const startDate = getLocalDateString(startOfWeek);
     const endDate = new Date(startOfWeek);
     endDate.setDate(startOfWeek.getDate() + 6);
-    const endDateStr = endDate.toISOString().split("T")[0];
+    const endDateStr = getLocalDateString(endDate);
     
     // Get week IDs
     const weekId = getWeekId(startOfWeek);
@@ -222,7 +230,7 @@ function calculateWeeklyAnalysis(moods, startDate, endDate, weekId) {
   for (let i = 0; i < 7; i++) {
     const dayDate = new Date(startD);
     dayDate.setDate(dayDate.getDate() + i);
-    const dayStr = dayDate.toISOString().split("T")[0];
+    const dayStr = getLocalDateString(dayDate);
     const dayName = dayDate.toLocaleDateString("en-US", { weekday: "short" });
     
     const dayMood = moods.find(m => m.date === dayStr);

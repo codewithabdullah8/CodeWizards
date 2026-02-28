@@ -102,7 +102,7 @@ export default function RecentEntries() {
         combined.push(
           ...normalizeEntries(scheduleResult.value.data, 'schedule', {
             sourceLabel: 'Schedule',
-            navigatePath: () => '/schedule',
+            navigatePath: () => '/professional',
           })
         );
       } else {
@@ -116,7 +116,19 @@ export default function RecentEntries() {
             ? entry.navigatePath(entry)
             : entry.navigatePath,
         }))
-        .sort((a, b) => b.sortTimestamp - a.sortTimestamp);
+        .sort((a, b) => {
+          // Primary sort by timestamp descending
+          if (b.sortTimestamp !== a.sortTimestamp) {
+            return b.sortTimestamp - a.sortTimestamp;
+          }
+          // Secondary sort by MongoDB ObjectId (contains timestamp)
+          // ObjectIds that are created later are numerically larger
+          const aId = String(a.id || a._id || '');
+          const bId = String(b.id || b._id || '');
+          if (aId > bId) return -1;
+          if (aId < bId) return 1;
+          return 0;
+        });
 
       setRecentEntries(finalEntries);
       setError(errors.length === results.length ? 'Could not load recent entries' : '');
@@ -212,57 +224,59 @@ export default function RecentEntries() {
                 </p>
               </div>
             ) : (
-              <div className="row g-3">
+              <div className="row g-4">
                 {filteredEntries.map((entry, index) => (
                   <motion.div
                     key={entry.entryKey}
-                    className="col-12"
+                    className="col-12 col-md-6 col-lg-4"
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.1 * index, duration: 0.4 }}
-                    whileHover={{ scale: 1.01 }}
+                    transition={{ delay: 0.05 * index, duration: 0.4 }}
+                    whileHover={{ scale: 1.03 }}
                   >
                     <div
-                      className="entry-card card border-0 shadow-sm p-3 cursor-pointer"
+                      className="entry-card card border-0 shadow-sm h-100 cursor-pointer"
                       onClick={() => entry.navigatePath && navigate(entry.navigatePath)}
+                      style={{ transition: 'all 0.3s ease' }}
                     >
-                      <div className="d-flex justify-content-between align-items-start">
-                        <div className="flex-grow-1 me-3">
-                          <h6 className="fw-bold mb-2 text-primary">
-                            {entry.title || '(Untitled)'}
-                          </h6>
-                          <p className="text-muted small mb-2" style={{
-                            display: '-webkit-box',
-                            WebkitLineClamp: 2,
-                            WebkitBoxOrient: 'vertical',
-                            overflow: 'hidden'
-                          }}>
-                            {entry.content || 'No details available'}
-                          </p>
-                          <div className="d-flex align-items-center gap-3">
-                            <small className="text-muted">
+                      <div className="card-body d-flex flex-column">
+                        <div className="mb-2">
+                          {entry.sourceLabel && (
+                            <span
+                              className={`badge bg-${getSourceBadgeColor(entry.source)} bg-opacity-10 text-${getSourceBadgeColor(entry.source)} mb-2`}
+                            >
+                              <i className="bi bi-folder me-1"></i>
+                              {entry.sourceLabel}
+                            </span>
+                          )}
+                        </div>
+                        <h6 className="fw-bold mb-2 text-primary">
+                          {entry.title || '(Untitled)'}
+                        </h6>
+                        <p className="text-muted small mb-3 flex-grow-1" style={{
+                          display: '-webkit-box',
+                          WebkitLineClamp: 3,
+                          WebkitBoxOrient: 'vertical',
+                          overflow: 'hidden',
+                          minHeight: '60px'
+                        }}>
+                          {entry.content || 'No details available'}
+                        </p>
+                        <div className="mt-auto">
+                          <div className="d-flex align-items-center justify-content-between text-muted small">
+                            <span>
                               <i className="bi bi-calendar me-1"></i>
                               {entry.displayDate
                                 ? new Date(entry.displayDate).toLocaleDateString()
                                 : 'No date'}
-                            </small>
-                            {entry.sourceLabel && (
-                              <span
-                                className={`badge bg-${getSourceBadgeColor(entry.source)} bg-opacity-10 text-${getSourceBadgeColor(entry.source)}`}
-                              >
-                                <i className="bi bi-folder me-1"></i>
-                                {entry.sourceLabel}
-                              </span>
-                            )}
+                            </span>
                             {entry.musicKey && entry.musicKey !== 'none' && (
                               <span className="badge bg-success bg-opacity-10 text-success">
                                 <i className="bi bi-music-note me-1"></i>
-                                {entry.musicKey}
                               </span>
                             )}
                           </div>
                         </div>
-                        <i className="bi bi-chevron-right text-muted"></i>
                       </div>
                     </div>
                   </motion.div>

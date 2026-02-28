@@ -1,41 +1,17 @@
 {
-  "date": "2026-02-25",
+  "date": "2026-02-28",
   "quote": {
-    "text": "Living a life that has a greater purpose and living up to it is the ultimate degree that we should strive for.",
-    "author": "Gurbaksh Chahal"
+    "text": "You'll get more from being a peacemaker than a warrior.",
+    "author": "Arnold Schwarzenegger"
   },
   "history": [
     {
-      "text": "Living a life that has a greater purpose and living up to it is the ultimate degree that we should strive for.",
-      "author": "Gurbaksh Chahal"
+      "text": "You'll get more from being a peacemaker than a warrior.",
+      "author": "Arnold Schwarzenegger"
     },
     {
-      "text": "I dream my painting and I paint my dream.",
-      "author": "Vincent van Gogh"
-    },
-    {
-      "text": "The only lost cause is one we give up on before we enter the struggle.",
-      "author": "Vaclav Havel"
-    },
-    {
-      "text": "Blessed is he who expects nothing, for he shall be disappointed.",
-      "author": "Jonathan Swift"
-    },
-    {
-      "text": "Do not follow the ideas of others, but learn to listen to the voice within yourself.",
-      "author": "Dogen"
-    },
-    {
-      "text": "If I persist long enough I will win.",
-      "author": "Og Mandino"
-    },
-    {
-      "text": "Time heals what reason cannot.  ",
-      "author": "Seneca"
-    },
-    {
-      "text": "Do not go where the path may lead, go instead where there is no path and leave a trail.",
-      "author": "Ralph Waldo Emerson"
+      "text": "The only way to do great work is to love what you do.",
+      "author": "Steve Jobs"
     }
   ]
 }

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import ProAPI from "../../api/professionalDiary";
+import ScheduleAPI from "../../api/schedule";
 
 export default function NewEntry() {
   const [title, setTitle] = useState("");
@@ -9,6 +10,12 @@ export default function NewEntry() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
+  const [showScheduleFields, setShowScheduleFields] = useState(false);
+  const [scheduleTitle, setScheduleTitle] = useState("");
+  const [scheduleDate, setScheduleDate] = useState("");
+  const [scheduleTime, setScheduleTime] = useState("");
+  const [scheduleDescription, setScheduleDescription] = useState("");
+  const [scheduleAdded, setScheduleAdded] = useState(false);
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -26,9 +33,33 @@ export default function NewEntry() {
       return;
     }
 
+    if (showScheduleFields) {
+      if (!scheduleTitle.trim()) {
+        setError("Schedule title is required when adding a schedule");
+        return;
+      }
+      if (!scheduleDate) {
+        setError("Schedule date is required when adding a schedule");
+        return;
+      }
+    }
+
     setLoading(true);
     try {
       await ProAPI.createEntry({ title: title.trim(), description: description.trim() });
+
+      if (showScheduleFields) {
+        await ScheduleAPI.createItem({
+          title: scheduleTitle.trim(),
+          description: scheduleDescription.trim(),
+          date: scheduleDate,
+          time: scheduleTime,
+        });
+        setScheduleAdded(true);
+      } else {
+        setScheduleAdded(false);
+      }
+
       setSuccess(true);
       // Small delay to show success message
       setTimeout(() => {
@@ -66,7 +97,11 @@ export default function NewEntry() {
                   <i className="bi bi-check-circle-fill text-success display-1 mb-4"></i>
                 </motion.div>
                 <h4 className="card-title text-success mb-3">Entry Created Successfully!</h4>
-                <p className="card-text text-muted mb-4">Your professional reflection has been saved.</p>
+                <p className="card-text text-muted mb-4">
+                  {scheduleAdded
+                    ? "Your professional reflection and schedule were saved."
+                    : "Your professional reflection has been saved."}
+                </p>
                 <motion.div
                   animate={{ rotate: 360 }}
                   transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
@@ -177,6 +212,103 @@ export default function NewEntry() {
                 </motion.div>
 
                 <motion.div
+                  className="mb-4"
+                  initial={{ x: -20, opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  transition={{ delay: 0.75, duration: 0.4 }}
+                >
+                  <div className="d-flex justify-content-start mb-3">
+                    <motion.button
+                      type="button"
+                      className={`btn ${showScheduleFields ? 'btn-outline-danger' : 'btn-outline-primary'} px-4 py-2`}
+                      onClick={() => {
+                        setShowScheduleFields(!showScheduleFields);
+                        if (!showScheduleFields && !scheduleTitle.trim() && title.trim()) {
+                          setScheduleTitle(title.trim());
+                        }
+                        if (error) setError("");
+                      }}
+                      whileHover={{ scale: 1.03 }}
+                      whileTap={{ scale: 0.97 }}
+                    >
+                      <i className={`bi ${showScheduleFields ? 'bi-x-circle' : 'bi-calendar-plus'} me-2`}></i>
+                      {showScheduleFields ? 'Close ' : 'Add Schedule'}
+                    </motion.button>
+                  </div>
+
+                  {showScheduleFields && (
+                    <div className="create-form p-3 p-md-4">
+                      <h6 className="text-primary mb-3">
+                        <i className="bi bi-calendar-check me-2"></i>
+                        Schedule Details
+                      </h6>
+
+                      <div className="row g-3">
+                        <div className="col-md-6">
+                          <label htmlFor="schedule-title" className="form-label fw-bold">
+                            Schedule Title <span className="text-danger">*</span>
+                          </label>
+                          <input
+                            id="schedule-title"
+                            type="text"
+                            className="form-control"
+                            placeholder="Meeting, task, milestone..."
+                            value={scheduleTitle}
+                            onChange={(e) => {
+                              setScheduleTitle(e.target.value);
+                              if (error) setError("");
+                            }}
+                          />
+                        </div>
+
+                        <div className="col-md-3">
+                          <label htmlFor="schedule-date" className="form-label fw-bold">
+                            Date <span className="text-danger">*</span>
+                          </label>
+                          <input
+                            id="schedule-date"
+                            type="date"
+                            className="form-control"
+                            value={scheduleDate}
+                            onChange={(e) => {
+                              setScheduleDate(e.target.value);
+                              if (error) setError("");
+                            }}
+                          />
+                        </div>
+
+                        <div className="col-md-3">
+                          <label htmlFor="schedule-time" className="form-label fw-bold">
+                            Time
+                          </label>
+                          <input
+                            id="schedule-time"
+                            type="time"
+                            className="form-control"
+                            value={scheduleTime}
+                            onChange={(e) => setScheduleTime(e.target.value)}
+                          />
+                        </div>
+
+                        <div className="col-12">
+                          <label htmlFor="schedule-description" className="form-label fw-bold">
+                            Schedule Notes
+                          </label>
+                          <textarea
+                            id="schedule-description"
+                            className="form-control"
+                            rows={3}
+                            placeholder="Optional details for this schedule item..."
+                            value={scheduleDescription}
+                            onChange={(e) => setScheduleDescription(e.target.value)}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </motion.div>
+
+                <motion.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: 0.8, duration: 0.4 }}
@@ -218,7 +350,7 @@ export default function NewEntry() {
                       ) : (
                         <>
                           <i className="bi bi-check-circle me-2"></i>
-                          Save Professional Entry
+                          {showScheduleFields ? 'Save Entry & Schedule' : 'Save Professional Entry'}
                         </>
                       )}
                     </motion.button>
@@ -234,11 +366,11 @@ export default function NewEntry() {
             animate={{ opacity: 1 }}
             transition={{ delay: 1, duration: 0.5 }}
           >
-            <div className="alert alert-info border-0" style={{ background: 'var(--light-blue)', borderRadius: '16px' }}>
+            <div className="professional-tips-box border-0">
               <div className="d-flex align-items-start">
-                <i className="bi bi-lightbulb text-primary fs-4 me-3 mt-1"></i>
+                <i className="bi bi-lightbulb fs-4 me-3 mt-1 professional-tips-icon"></i>
                 <div>
-                  <h6 className="alert-heading text-primary mb-2">
+                  <h6 className="professional-tips-title mb-2">
                     <strong>Tips for Meaningful Professional Entries</strong>
                   </h6>
                   <div className="row">
@@ -257,7 +389,7 @@ export default function NewEntry() {
                       </ul>
                     </div>
                   </div>
-                  <p className="text-muted mb-0 mt-2 small">
+                  <p className="professional-tips-text mb-0 mt-2 small">
                     <i className="bi bi-shield-check me-1"></i>
                     All entries are private and secure
                   </p>
