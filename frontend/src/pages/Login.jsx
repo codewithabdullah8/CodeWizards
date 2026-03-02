@@ -18,6 +18,18 @@ export default function Login({ onLogin }) {
 
   const emailRef = useRef(null);
 
+  // Calculate password strength
+  const getPasswordStrength = (pass) => {
+    if (!pass) return 0;
+    let strength = 0;
+    if (pass.length >= 6) strength++;
+    if (pass.length >= 10) strength++;
+    if (/[A-Z]/.test(pass)) strength++;
+    if (/[0-9]/.test(pass)) strength++;
+    if (/[^A-Za-z0-9]/.test(pass)) strength++;
+    return strength;
+  };
+
   useEffect(() => {
     emailRef.current?.focus();
     const savedEmail = localStorage.getItem("mydiary_email");
@@ -138,7 +150,13 @@ export default function Login({ onLogin }) {
     <div className="auth-shell">
       <section className="auth-left">
         <div className="auth-left-content">
-          <div className="auth-badge">MyDiary</div>
+          <motion.div 
+            className="auth-badge"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            MyDiary
+          </motion.div>
           <h1 className="auth-left-title">Welcome Back</h1>
           <p className="auth-left-text">
             Sign in to capture your moments, sync across devices, and keep your
@@ -208,6 +226,7 @@ export default function Login({ onLogin }) {
                 initial={false}
                 animate={{ scale: emailError ? 1.02 : 1 }}
                 transition={{ duration: 0.2 }}
+                whileFocus={{ scale: 1 }}
               >
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
                   <path d="M4 6h16a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2z" />
@@ -263,6 +282,7 @@ export default function Login({ onLogin }) {
                 initial={false}
                 animate={{ scale: passwordError ? 1.02 : 1 }}
                 transition={{ duration: 0.2 }}
+                whileFocus={{ scale: 1 }}
               >
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
                   <rect x="3" y="11" width="18" height="10" rx="2" />
@@ -357,6 +377,7 @@ export default function Login({ onLogin }) {
               disabled={loading}
               whileHover={{ scale: !loading ? 1.02 : 1 }}
               whileTap={{ scale: !loading ? 0.98 : 1 }}
+              transition={{ type: "spring", stiffness: 400, damping: 17 }}
             >
               {loading ? (
                 <>

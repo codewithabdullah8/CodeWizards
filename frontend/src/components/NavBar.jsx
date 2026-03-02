@@ -1,12 +1,31 @@
-import { motion } from "framer-motion";
-import { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { AnimatePresence, motion } from "framer-motion";
+import { useEffect, useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import ThemeToggle from "./ThemeToggle";
 
 export default function Navbar({ user, onLogout }) {
+  const navigate = useNavigate();
   const location = useLocation();
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [navMenuOpen, setNavMenuOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+
+  const handleSaveSettings = () => {
+    setSettingsOpen(false);
+    navigate("/");
+  };
+
+  useEffect(() => {
+    if (settingsOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [settingsOpen]);
 
   const navItems = [
     { path: "/personal", label: "Personal", icon: "bi-journal-text" },
@@ -65,6 +84,17 @@ export default function Navbar({ user, onLogout }) {
                   <div className="user-email">{user?.email || ""}</div>
                 </div>
               </div>
+              <hr className="dropdown-divider" />
+              <button
+                className="dropdown-item"
+                onClick={() => {
+                  setSettingsOpen(true);
+                  setUserMenuOpen(false);
+                }}
+              >
+                <i className="bi bi-gear"></i>
+                Settings
+              </button>
               <hr className="dropdown-divider" />
               <div className="dropdown-item theme-toggle-item">
                 <ThemeToggle size="small" />
@@ -141,6 +171,61 @@ export default function Navbar({ user, onLogout }) {
           onClick={() => setUserMenuOpen(false)}
         />
       )}
+
+      <AnimatePresence>
+        {settingsOpen && (
+          <motion.div
+            className="modal-overlay"
+            onClick={() => setSettingsOpen(false)}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+          >
+            <motion.div
+              className="modal-card"
+              onClick={(e) => e.stopPropagation()}
+              initial={{ opacity: 0, scale: 0.94 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.94 }}
+              transition={{ duration: 0.22, ease: "easeOut" }}
+            >
+              <div className="settings-modal-header">
+                <h3 className="settings-modal-title">Settings</h3>
+                <button
+                  className="settings-close-btn"
+                  aria-label="Close settings"
+                  onClick={() => setSettingsOpen(false)}
+                >
+                  <i className="bi bi-x"></i>
+                </button>
+              </div>
+
+              <div className="settings-modal-section">
+                <div className="settings-row">
+                  <span>Theme</span>
+                  <ThemeToggle size="small" />
+                </div>
+              </div>
+
+              <div className="settings-modal-section">
+                <h4 className="settings-section-title">Preferences</h4>
+                <p className="settings-placeholder">Preference options coming soon.</p>
+              </div>
+
+              <div className="settings-modal-actions">
+                <button
+                  className="btn btn-primary"
+                  type="button"
+                  onClick={handleSaveSettings}
+                >
+                  Save
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.nav>
   );
 }
