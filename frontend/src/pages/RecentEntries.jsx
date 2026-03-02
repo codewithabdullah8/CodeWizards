@@ -17,7 +17,18 @@ export default function RecentEntries() {
   const [query, setQuery] = useState('');
 
   useEffect(() => {
+    // load on mount and also refresh when other parts of the app signal a change
     loadRecentEntries();
+
+    const refreshHandler = () => {
+      // re-fetch from backend so deleted/created entries are in sync
+      loadRecentEntries();
+    };
+
+    window.addEventListener('refreshRecentEntries', refreshHandler);
+    return () => {
+      window.removeEventListener('refreshRecentEntries', refreshHandler);
+    };
   }, []);
 
   const loadRecentEntries = async () => {

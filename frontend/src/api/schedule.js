@@ -16,6 +16,7 @@ const ScheduleAPI = {
   createItem: (payload) => API.post("/new", payload),
   deleteItem: (id) => API.delete(`/delete/${id}`),
   toggleComplete: (id) => API.patch(`/complete/${id}`),
+  getItem: (id) => API.get(`/item/${id}`),
   getItemDates: async () => {
     const { data } = await API.get("/all");
     // Extract only dates from schedule items

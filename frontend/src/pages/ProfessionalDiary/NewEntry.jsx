@@ -60,6 +60,10 @@ export default function NewEntry() {
         setScheduleAdded(false);
       }
 
+      // notify recents and professional list so both update
+      window.dispatchEvent(new Event('refreshRecentEntries'));
+      window.dispatchEvent(new Event('refreshProfessionalEntries'));
+
       setSuccess(true);
       // Small delay to show success message
       setTimeout(() => {

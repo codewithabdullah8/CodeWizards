@@ -2,8 +2,10 @@ import React, { useState, useEffect } from "react";
 import { saveMood, getHistoricalAnalysis } from "../api/mood";
 import { motion } from "framer-motion";
 import API from "../api";
+import { useTheme } from "../contexts/ThemeContext";
 
 export default function MoodCheckin() {
+  const { isDarkMode } = useTheme();
   const emotions = [
     { label: "😌 Calm", value: "calm", color: "#60a5fa" },
     { label: "😐 Normal", value: "normal", color: "#94a3b8" },
@@ -315,7 +317,9 @@ export default function MoodCheckin() {
           boxShadow: '0 8px 24px rgba(102, 126, 234, 0.12)',
           borderRadius: '16px',
           overflow: 'visible',
-          background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.95) 100%)',
+          background: isDarkMode 
+            ? 'linear-gradient(135deg, rgba(30, 41, 59, 0.9) 0%, rgba(15, 23, 42, 0.9) 100%)'
+            : 'linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.95) 100%)',
           marginBottom: '30px',
           zIndex: hoveredMoodIndex !== null ? 10000 : 'auto'
         }}
@@ -340,7 +344,15 @@ export default function MoodCheckin() {
           </div>
 
           {/* Mood Content */}
-          <div style={{ paddingTop: '24px', paddingRight: '24px', paddingBottom: '24px', paddingLeft: '24px', position: 'relative', overflow: 'visible' }}>
+          <div style={{ 
+            paddingTop: '24px', 
+            paddingRight: '24px', 
+            paddingBottom: '24px', 
+            paddingLeft: '24px', 
+            position: 'relative', 
+            overflow: 'visible',
+            background: isDarkMode ? 'rgba(30, 41, 59, 0.5)' : 'transparent'
+          }}>
             <div className="d-flex gap-3 justify-content-between mood-container" style={{ flexWrap: "nowrap", overflowX: "auto", overflowY: "visible", position: "relative" }}>
               {moodRow.map((mood, i) => (
               <div
@@ -356,7 +368,7 @@ export default function MoodCheckin() {
                   zIndex: hoveredMoodIndex === i ? 9999 : 1,
                   padding: "10px",
                   borderRadius: "12px",
-                  background: hoveredMoodIndex === i ? "rgba(102, 126, 234, 0.1)" : "transparent",
+                  background: hoveredMoodIndex === i ? (isDarkMode ? "rgba(102, 126, 234, 0.2)" : "rgba(102, 126, 234, 0.1)") : "transparent",
                   transition: "all 0.2s ease"
                 }}
                 onMouseEnter={() => setHoveredMoodIndex(i)}
@@ -388,10 +400,10 @@ export default function MoodCheckin() {
                 >
                   {mood.emoji}
                 </div>
-                <small style={{ whiteSpace: "nowrap", color: '#475569', fontWeight: '600', fontSize: '12px' }}>
+                <small style={{ whiteSpace: "nowrap", color: isDarkMode ? '#cbd5e1' : '#475569', fontWeight: '600', fontSize: '12px' }}>
                   {mood.day.charAt(0).toUpperCase() + mood.day.slice(1)}
                 </small>
-                <small style={{ fontSize: "11px", whiteSpace: "nowrap", color: '#667eea', fontWeight: '700', letterSpacing: '0.5px' }}>
+                <small style={{ fontSize: "11px", whiteSpace: "nowrap", color: isDarkMode ? '#93c5fd' : '#667eea', fontWeight: '700', letterSpacing: '0.5px' }}>
                   {mood.label.toUpperCase()}
                 </small>
 
