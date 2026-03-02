@@ -27,6 +27,9 @@ export default function ViewEntry() {
     if (window.confirm("Are you sure you want to delete this entry?")) {
       try {
         await ProAPI.deleteEntry(id);
+        // trigger refresh for both recent & professional list
+        window.dispatchEvent(new Event('refreshRecentEntries'));
+        window.dispatchEvent(new Event('refreshProfessionalEntries'));
         navigate("/professional");
       } catch (err) {
         alert("Failed to delete entry");

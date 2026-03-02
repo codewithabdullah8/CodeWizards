@@ -47,6 +47,8 @@ export default function Personal() {
     try {
       await PersonalAPI.deleteEntry(id);
       setEntries(entries.filter(e => e._id !== id));
+      // notify recent entries component to refresh
+      window.dispatchEvent(new Event('refreshRecentEntries'));
     } catch (err) {
       alert('Failed to delete entry');
     }
@@ -195,6 +197,8 @@ export default function Personal() {
                     try {
                       const { data } = await PersonalAPI.createEntry(payload);
                       setEntries([data, ...entries]);
+                      // refresh recent entries immediately
+                      window.dispatchEvent(new Event('refreshRecentEntries'));
                       setShowCreate(false);
                       setMoodAnswers({
                         energy: 3,

@@ -2210,6 +2210,9 @@ html {
 .user-email {
   color: var(--text-secondary);
   font-size: 0.75rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .dropdown-divider {
@@ -2419,6 +2422,9 @@ html {
 .dark-mode .user-name,
 .dark-mode .user-email {
   color: #f1f5f9;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .dark-mode .dropdown-divider {
@@ -2622,6 +2628,7 @@ html {
     width: 28px;
     height: 28px;
     border-radius: 50%;
+    overflow: hidden;
     background: white;
     color: #667eea;
     font-weight: 600;
@@ -2776,6 +2783,7 @@ html {
     width: 28px;
     height: 28px;
     border-radius: 50%;
+    overflow: hidden;
     background: white;
     color: #667eea;
     font-weight: 600;

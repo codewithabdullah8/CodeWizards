@@ -9,9 +9,10 @@ export default function Navbar({ user, onLogout }) {
   const [navMenuOpen, setNavMenuOpen] = useState(false);
 
   const navItems = [
-    { path: "/personal", label: "Personal", icon: "bi-journal-text" },
+    { path: "/", label: "Dashboard", icon: "bi-house" },
     { path: "/recent", label: "Recent Entries", icon: "bi-clock-history" },
     { path: "/professional", label: "Professional", icon: "bi-briefcase" },
+    { path: "/personal", label: "Personal", icon: "bi-journal-text" },
     { path: "/mood-checkin", label: "Mood Check‑in", icon: "bi-emoji-smile" }
   ];
 
@@ -109,17 +110,7 @@ export default function Navbar({ user, onLogout }) {
         </div>
 
         <div className="nav-menu-content">
-          {/* Dashboard Link */}
-          <Link
-            to="/"
-            className={`nav-menu-item ${location.pathname === '/' ? 'active' : ''}`}
-            onClick={() => setNavMenuOpen(false)}
-          >
-            <i className="bi bi-house"></i>
-            <span>Dashboard</span>
-          </Link>
-
-          {/* Other Navigation Items */}
+          {/* Navigation Items */}
           {navItems.map((item) => (
             <Link
               key={item.path}

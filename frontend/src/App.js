@@ -25,6 +25,7 @@ import ProfessionalNewEntry from "./pages/ProfessionalDiary/NewEntry";
 import ProfessionalViewEntry from "./pages/ProfessionalDiary/ViewEntry";
 import RecentEntries from "./pages/RecentEntries";
 import MoodCheckin from "./pages/MoodCheckin";
+import ScheduleView from "./pages/ScheduleView";
 
 
 // ✅ Protected route wrapper - checks if user is authenticated
@@ -161,6 +162,14 @@ function AppContent() {
             element={
               <Protected>
                 <ProfessionalViewEntry />
+              </Protected>
+            }
+          />
+          <Route
+            path="/schedule/item/:id"
+            element={
+              <Protected>
+                <ScheduleView />
               </Protected>
             }
           />

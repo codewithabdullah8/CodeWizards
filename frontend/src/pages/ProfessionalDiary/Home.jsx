@@ -2,29 +2,57 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import ProAPI from "../../api/professionalDiary";
+import ScheduleAPI from "../../api/schedule";
 
 export default function ProfessionalHome() {
   const [entries, setEntries] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  const loadEntries = async () => {
+    setLoading(true);
+    try {
+      const [proRes, schedRes] = await Promise.all([
+        ProAPI.getEntries(),
+        ScheduleAPI.getItems(),
+      ]);
+      const proList = (proRes.data || []).map((e) => ({ ...e, source: 'professional' }));
+      const schedList = (schedRes.data || []).map((e) => ({ ...e, source: 'schedule' }));
+      const combined = [...proList, ...schedList];
+      combined.sort((a, b) => new Date(b.date) - new Date(a.date));
+      setEntries(combined);
+      setLoading(false);
+    } catch (err) {
+      setError("Failed to load professional diary entries");
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    ProAPI.getEntries()
-      .then((res) => {
-        setEntries(res.data);
-        setLoading(false);
-      })
-      .catch((err) => {
-        setError("Failed to load professional diary entries");
-        setLoading(false);
-      });
+    loadEntries();
+
+    const refreshHandler = () => {
+      loadEntries();
+    };
+
+    window.addEventListener('refreshProfessionalEntries', refreshHandler);
+    return () => {
+      window.removeEventListener('refreshProfessionalEntries', refreshHandler);
+    };
   }, []);
 
-  const deleteEntry = async (id) => {
+  const deleteEntry = async (id, source = 'professional') => {
     if (!window.confirm('Delete this entry?')) return;
     try {
-      await ProAPI.deleteEntry(id);
-      setEntries(entries.filter(e => e._id !== id));
+      if (source === 'schedule') {
+        await ScheduleAPI.deleteItem(id);
+      } else {
+        await ProAPI.deleteEntry(id);
+      }
+      setEntries(entries.filter((e) => e._id !== id));
+      // notify both recent list and professional list
+      window.dispatchEvent(new Event('refreshRecentEntries'));
+      window.dispatchEvent(new Event('refreshProfessionalEntries'));
     } catch (err) {
       alert('Failed to delete entry');
     }
@@ -107,9 +135,9 @@ export default function ProfessionalHome() {
           <div className="mb-4">
             <i className="bi bi-journal-x display-1 text-muted"></i>
           </div>
-          <h4 className="text-muted mb-3">No professional entries yet</h4>
+          <h4 className="text-muted mb-3">No professional or schedule items yet</h4>
           <p className="text-muted mb-4 fs-5">
-            Start documenting your professional journey by creating your first entry.
+            Start documenting your professional journey or add a schedule by creating your first entry.
           </p>
           <motion.div
             whileHover={{ scale: 1.05 }}
@@ -148,7 +176,7 @@ export default function ProfessionalHome() {
           >
           {entries.map((entry, index) => (
             <motion.div 
-              key={entry._id} 
+              key={entry._id}
               className="col-12 col-md-6 col-lg-4"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -164,11 +192,20 @@ export default function ProfessionalHome() {
                       WebkitBoxOrient: 'vertical',
                       overflow: 'hidden',
                       fontSize: '1.1rem'
-                    }}>{entry.title}</h5>
+                    }}>
+                      {entry.source === 'schedule' ? (
+                        <><i className="bi bi-calendar3 me-1"></i>{entry.title}</>
+                      ) : (
+                        entry.title
+                      )}
+                    </h5>
                   </div>
                   <small className="text-muted mb-3">
                     <i className="bi bi-calendar-event me-1"></i>
                     {new Date(entry.date).toLocaleDateString()}
+                    {entry.source === 'schedule' && entry.time ? (
+                      <span> {new Date(entry.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                    ) : null}
                   </small>
                   <p className="card-text text-muted mb-3 flex-grow-1" style={{
                     display: '-webkit-box',
@@ -182,20 +219,35 @@ export default function ProfessionalHome() {
                   <div className="mt-auto">
                     <div className="d-flex justify-content-between align-items-center mb-2">
                       <div className="d-flex gap-2">
-                        <motion.div
-                          whileHover={{ scale: 1.05 }}
-                          whileTap={{ scale: 0.95 }}
-                        >
-                          <Link
-                            to={`/professional/entry/${entry._id}`}
-                            className="btn btn-outline-primary btn-sm px-3"
+                        {entry.source === 'professional' ? (
+                          <motion.div
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
                           >
-                            <i className="bi bi-eye me-1"></i>
-                            View
-                          </Link>
-                        </motion.div>
+                            <Link
+                              to={`/professional/entry/${entry._id}`}
+                              className="btn btn-outline-primary btn-sm px-3"
+                            >
+                              <i className="bi bi-eye me-1"></i>
+                              View
+                            </Link>
+                          </motion.div>
+                        ) : entry.source === 'schedule' ? (
+                          <motion.div
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                          >
+                            <Link
+                              to={`/schedule/item/${entry._id}`}
+                              className="btn btn-outline-secondary btn-sm px-3"
+                            >
+                              <i className="bi bi-calendar3 me-1"></i>
+                              View
+                            </Link>
+                          </motion.div>
+                        ) : null}
                         <motion.button
-                          onClick={() => deleteEntry(entry._id)}
+                          onClick={() => deleteEntry(entry._id, entry.source)}
                           className="btn btn-outline-danger btn-sm px-3"
                           whileHover={{ scale: 1.05 }}
                           whileTap={{ scale: 0.95 }}
