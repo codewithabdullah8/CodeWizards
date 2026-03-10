@@ -52,6 +52,40 @@ function AuthRoute({ children }) {
   return children;
 }
 
+function OfflineBanner() {
+  const [online, setOnline] = useState(navigator.onLine);
+
+  useEffect(() => {
+    const goOnline = () => setOnline(true);
+    const goOffline = () => setOnline(false);
+
+    window.addEventListener("online", goOnline);
+    window.addEventListener("offline", goOffline);
+
+    return () => {
+      window.removeEventListener("online", goOnline);
+      window.removeEventListener("offline", goOffline);
+    };
+  }, []);
+
+  if (online) return null;
+
+  return (
+    <div style={{
+      position: "fixed",
+      top: "64px",
+      width: "100%",
+      background: "#ff4d4f",
+      color: "white",
+      textAlign: "center",
+      padding: "8px",
+      zIndex: 900
+    }}>
+      ⚠ You are offline. Some features may not work.
+    </div>
+  );
+}
+
 // ✅ AppContent component that uses hooks inside Provider
 function AppContent() {
   const navigate = useNavigate();
@@ -106,6 +140,8 @@ function AppContent() {
   return (
     <ToastProvider>
       <ThemeProvider>
+        <OfflineBanner />
+      
         {/* Navbar visible only when user is logged in */}
         {user && <NavBar user={user} onLogout={handleLogout} />}         
 
@@ -217,6 +253,7 @@ function AppContent() {
     </Protected>
   }
 />  
+
 
           {/* ===== CATCH-ALL (keep LAST) ===== */}
           <Route path="*" element={<Navigate to="/" replace />} />
