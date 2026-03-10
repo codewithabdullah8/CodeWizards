@@ -1,18 +1,86 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import ThemeToggle from "./ThemeToggle";
+import SettingsAPI from "../api/settings";
+import { useToast } from "../contexts/ToastContext";
 
 export default function Navbar({ user, onLogout }) {
   const navigate = useNavigate();
   const location = useLocation();
+  const { addToast } = useToast();
+  const { t, i18n } = useTranslation();
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [navMenuOpen, setNavMenuOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [settingsLoading, setSettingsLoading] = useState(false);
 
-  const handleSaveSettings = () => {
-    setSettingsOpen(false);
-    navigate("/");
+  // Settings state
+  const [emailNotifications, setEmailNotifications] = useState(() => {
+    return localStorage.getItem('emailNotifications') === 'true';
+  });
+  const [autoSaveDraft, setAutoSaveDraft] = useState(() => {
+    return localStorage.getItem('autoSaveDraft') !== 'false'; // Default true
+  });
+  const [language, setLanguage] = useState(() => {
+    return localStorage.getItem('language') || 'en';
+  });
+
+  // Update i18n language when language state changes
+  useEffect(() => {
+    i18n.changeLanguage(language);
+  }, [language, i18n]);
+
+  // Load settings from backend
+  useEffect(() => {
+    const loadSettings = async () => {
+      try {
+        const { data } = await SettingsAPI.getSettings();
+        setEmailNotifications(data.emailNotifications);
+        setAutoSaveDraft(data.autoSaveDraft);
+        setLanguage(data.language);
+        
+        // Also update localStorage
+        localStorage.setItem('emailNotifications', data.emailNotifications);
+        localStorage.setItem('autoSaveDraft', data.autoSaveDraft);
+        localStorage.setItem('language', data.language);
+      } catch (error) {
+        console.error('Error loading settings:', error);
+      }
+    };
+
+    if (user) {
+      loadSettings();
+    }
+  }, [user]);
+
+  const handleSaveSettings = async () => {
+    setSettingsLoading(true);
+    try {
+      // Save to backend
+      await SettingsAPI.updateSettings({
+        emailNotifications,
+        autoSaveDraft,
+        language
+      });
+      
+      // Save to localStorage
+      localStorage.setItem('emailNotifications', emailNotifications);
+      localStorage.setItem('autoSaveDraft', autoSaveDraft);
+      localStorage.setItem('language', language);
+      
+      // Update i18n language
+      i18n.changeLanguage(language);
+      
+      addToast(t('settingsSaved'), 'success');
+      setSettingsOpen(false);
+    } catch (error) {
+      console.error('Error saving settings:', error);
+      addToast(t('settingsFailed'), 'error');
+    } finally {
+      setSettingsLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -28,11 +96,11 @@ export default function Navbar({ user, onLogout }) {
   }, [settingsOpen]);
 
   const navItems = [
-    { path: "/", label: "Dashboard", icon: "bi-house" },
-    { path: "/recent", label: "Recent Entries", icon: "bi-clock-history" },
-    { path: "/professional", label: "Professional", icon: "bi-briefcase" },
-    { path: "/personal", label: "Personal", icon: "bi-journal-text" },
-    { path: "/mood-checkin", label: "Mood Check‑in", icon: "bi-emoji-smile" }
+    { path: "/", label: t('dashboard'), icon: "bi-house" },
+    { path: "/recent", label: t('recentEntries'), icon: "bi-clock-history" },
+    { path: "/professional", label: t('professional'), icon: "bi-briefcase" },
+    { path: "/personal", label: t('personal'), icon: "bi-journal-text" },
+    { path: "/mood-checkin", label: t('moodCheckin'), icon: "bi-emoji-smile" }
   ];
 
   return (
@@ -94,20 +162,15 @@ export default function Navbar({ user, onLogout }) {
                 }}
               >
                 <i className="bi bi-gear"></i>
-                Settings
+                {t('settings')}
               </button>
-              <hr className="dropdown-divider" />
-              <div className="dropdown-item theme-toggle-item">
-                <ThemeToggle size="small" />
-                <span>Theme</span>
-              </div>
               <hr className="dropdown-divider" />
               <button
                 className="dropdown-item logout"
                 onClick={onLogout}
               >
                 <i className="bi bi-box-arrow-right"></i>
-                Logout
+                {t('logout')}
               </button>
             </div>
           )}
@@ -130,7 +193,7 @@ export default function Navbar({ user, onLogout }) {
         transition={{ ease: "easeOut", duration: 0.3 }}
       >
         <div className="nav-menu-header">
-          <h3 className="nav-menu-title">Menu</h3>
+          <h3 className="nav-menu-title">{t('menu')}</h3>
           <button
             className="nav-menu-close"
             onClick={() => setNavMenuOpen(false)}
@@ -182,7 +245,7 @@ export default function Navbar({ user, onLogout }) {
               transition={{ duration: 0.22, ease: "easeOut" }}
             >
               <div className="settings-modal-header">
-                <h3 className="settings-modal-title">Settings</h3>
+                <h3 className="settings-modal-title">{t('settings')}</h3>
                 <button
                   className="settings-close-btn"
                   aria-label="Close settings"
@@ -194,14 +257,68 @@ export default function Navbar({ user, onLogout }) {
 
               <div className="settings-modal-section">
                 <div className="settings-row">
-                  <span>Theme</span>
+                  <span>{t('theme')}</span>
                   <ThemeToggle size="small" />
                 </div>
               </div>
 
               <div className="settings-modal-section">
-                <h4 className="settings-section-title">Preferences</h4>
-                <p className="settings-placeholder">Preference options coming soon.</p>
+                <h4 className="settings-section-title">{t('notifications')}</h4>
+                <div className="settings-row">
+                  <div className="settings-label">
+                    <span>{t('emailNotifications')}</span>
+                    <small className="settings-sublabel">{t('receiveReminders')} {user?.email}</small>
+                  </div>
+                  <label className="toggle-switch">
+                    <input
+                      type="checkbox"
+                      checked={emailNotifications}
+                      onChange={(e) => setEmailNotifications(e.target.checked)}
+                    />
+                    <span className="toggle-slider"></span>
+                  </label>
+                </div>
+              </div>
+
+              <div className="settings-modal-section">
+                <h4 className="settings-section-title">{t('diaryPreferences')}</h4>
+                <div className="settings-row">
+                  <div className="settings-label">
+                    <span>{t('autoSaveDraft')}</span>
+                    <small className="settings-sublabel">{t('autoSaveDescription')}</small>
+                  </div>
+                  <label className="toggle-switch">
+                    <input
+                      type="checkbox"
+                      checked={autoSaveDraft}
+                      onChange={(e) => setAutoSaveDraft(e.target.checked)}
+                    />
+                    <span className="toggle-slider"></span>
+                  </label>
+                </div>
+              </div>
+
+              <div className="settings-modal-section">
+                <h4 className="settings-section-title">{t('general')}</h4>
+                <div className="settings-row">
+                  <span>{t('language')}</span>
+                  <select
+                    className="settings-select"
+                    value={language}
+                    onChange={(e) => setLanguage(e.target.value)}
+                  >
+                    <option value="en">English</option>
+                    <option value="es">Español</option>
+                    <option value="fr">Français</option>
+                    <option value="de">Deutsch</option>
+                    <option value="it">Italiano</option>
+                    <option value="pt">Português</option>
+                    <option value="ar">العربية</option>
+                    <option value="hi">हिन्दी</option>
+                    <option value="zh">中文</option>
+                    <option value="ja">日本語</option>
+                  </select>
+                </div>
               </div>
 
               <div className="settings-modal-actions">
@@ -209,8 +326,9 @@ export default function Navbar({ user, onLogout }) {
                   className="btn btn-primary"
                   type="button"
                   onClick={handleSaveSettings}
+                  disabled={settingsLoading}
                 >
-                  Save
+                  {settingsLoading ? t('saving') : t('save')}
                 </button>
               </div>
             </motion.div>

@@ -20,6 +20,20 @@ const userSchema = new mongoose.Schema(
       enum: ["local", "google"],
       default: "local",
     },
+    settings: {
+      emailNotifications: {
+        type: Boolean,
+        default: false
+      },
+      autoSaveDraft: {
+        type: Boolean,
+        default: true
+      },
+      language: {
+        type: String,
+        default: 'en'
+      }
+    }
   },
   { timestamps: true }
 );

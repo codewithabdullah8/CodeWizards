@@ -106,7 +106,7 @@ export default function Signup({ onSignup }) {
       <section className="auth-left">
         <div className="auth-left-content">
           <div className="auth-badge">MyDiary</div>
-          <h1 className="auth-left-title">Welcome Back</h1>
+          <h1 className="auth-left-title">Welcome To MyDiary</h1>
           <p className="auth-left-text">
             Create your account and keep every thought organized, private, and
             beautifully synced across devices.

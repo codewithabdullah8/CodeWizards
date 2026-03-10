@@ -2537,6 +2537,19 @@ html {
     gap: 0.75rem;
     color: var(--text-primary);
     font-weight: 500;
+    padding: 0.5rem 0;
+}
+
+.settings-label {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.settings-sublabel {
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    font-weight: 400;
 }
 
 .settings-section-title {
@@ -2550,6 +2563,84 @@ html {
     margin: 0;
     color: var(--text-secondary);
     font-size: 0.9rem;
+}
+
+/* Toggle Switch */
+.toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 44px;
+    height: 24px;
+    flex-shrink: 0;
+}
+
+.toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.toggle-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #cbd5e1;
+    transition: 0.3s;
+    border-radius: 24px;
+}
+
+.toggle-slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: 0.3s;
+    border-radius: 50%;
+}
+
+.toggle-switch input:checked + .toggle-slider {
+    background-color: #3b82f6;
+}
+
+.toggle-switch input:checked + .toggle-slider:before {
+    transform: translateX(20px);
+}
+
+.dark-mode .toggle-slider {
+    background-color: #475569;
+}
+
+.dark-mode .toggle-slider:before {
+    background-color: #e2e8f0;
+}
+
+/* Settings Select Dropdown */
+.settings-select {
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-width: 140px;
+}
+
+.settings-select:hover {
+    border-color: var(--primary-color);
+}
+
+.settings-select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
 .settings-modal-actions {
