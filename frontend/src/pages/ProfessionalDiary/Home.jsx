@@ -4,6 +4,45 @@ import { Link } from "react-router-dom";
 import ProAPI from "../../api/professionalDiary";
 import ScheduleAPI from "../../api/schedule";
 
+function formatDateValue(value, options) {
+  if (!value) return "";
+
+  const parsedDate = new Date(value);
+  if (Number.isNaN(parsedDate.getTime())) {
+    return "";
+  }
+
+  return parsedDate.toLocaleDateString(undefined, options);
+}
+
+function formatClockTime(value) {
+  if (!value) return "";
+
+  if (typeof value === "string") {
+    const timeMatch = value.trim().match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?$/);
+
+    if (timeMatch) {
+      const [, hours, minutes, seconds = "00"] = timeMatch;
+      const parsedTime = new Date();
+      parsedTime.setHours(Number(hours), Number(minutes), Number(seconds), 0);
+      return parsedTime.toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    }
+  }
+
+  const parsedDate = new Date(value);
+  if (Number.isNaN(parsedDate.getTime())) {
+    return "";
+  }
+
+  return parsedDate.toLocaleTimeString([], {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
 export default function ProfessionalHome() {
   const [entries, setEntries] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -202,9 +241,9 @@ export default function ProfessionalHome() {
                   </div>
                   <small className="text-muted mb-3">
                     <i className="bi bi-calendar-event me-1"></i>
-                    {new Date(entry.date).toLocaleDateString()}
+                    {formatDateValue(entry.date || entry.createdAt) || 'No date'}
                     {entry.source === 'schedule' && entry.time ? (
-                      <span> {new Date(entry.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                      <span> {formatClockTime(entry.time)}</span>
                     ) : null}
                   </small>
                   <p className="card-text text-muted mb-3 flex-grow-1" style={{
@@ -258,10 +297,7 @@ export default function ProfessionalHome() {
                     </div>
                     <small className="text-muted d-block text-end">
                       <i className="bi bi-clock me-1"></i>
-                      {new Date(entry.date).toLocaleTimeString('en-US', {
-                        hour: '2-digit',
-                        minute: '2-digit'
-                      })}
+                      {formatClockTime(entry.createdAt || entry.date) || 'No time'}
                     </small>
                   </div>
                 </div>

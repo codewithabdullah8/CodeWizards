@@ -3,6 +3,39 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import ScheduleAPI from '../api/schedule';
 
+function formatScheduleDate(value) {
+  if (!value) return 'No date';
+
+  const parsedDate = new Date(value);
+  if (Number.isNaN(parsedDate.getTime())) {
+    return 'No date';
+  }
+
+  return parsedDate.toLocaleDateString();
+}
+
+function formatScheduleTime(value) {
+  if (!value) return '';
+
+  if (typeof value === 'string') {
+    const timeMatch = value.trim().match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?$/);
+
+    if (timeMatch) {
+      const [, hours, minutes, seconds = '00'] = timeMatch;
+      const parsedTime = new Date();
+      parsedTime.setHours(Number(hours), Number(minutes), Number(seconds), 0);
+      return parsedTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }
+  }
+
+  const parsedDate = new Date(value);
+  if (Number.isNaN(parsedDate.getTime())) {
+    return '';
+  }
+
+  return parsedDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+}
+
 export default function ScheduleView() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -71,9 +104,9 @@ export default function ScheduleView() {
               </h2>
               <p className="text-muted mb-2">
                 <i className="bi bi-calendar-event me-1"></i>
-                {new Date(item.date).toLocaleDateString()}
+                {formatScheduleDate(item.date)}
                 {item.time && (
-                  <span> {new Date(item.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                  <span> {formatScheduleTime(item.time)}</span>
                 )}
               </p>
               <p className="card-text fs-5 lh-base mb-4">{item.description}</p>
