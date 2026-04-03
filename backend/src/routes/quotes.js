@@ -52,9 +52,10 @@ const fetchRandomQuote = () =>
 router.get("/today", async (req, res) => {
   try {
     const today = new Date().toISOString().slice(0, 10);
+    const forceRefresh = req.query.refresh === "true";
     const cache = await readCache();
 
-    if (cache.date === today && cache.quote) {
+    if (!forceRefresh && cache.date === today && cache.quote) {
       return res.json(cache.quote);
     }
 

@@ -30,10 +30,22 @@ root.render(
     </BrowserRouter>
   </React.StrictMode>
 );
+
 if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => {
-    navigator.serviceWorker.register("/service-worker.js")
-      .then(() => console.log("Service Worker Registered"))
-      .catch(err => console.log("SW registration failed", err));
+  window.addEventListener("load", async () => {
+    if (process.env.NODE_ENV === "production") {
+      navigator.serviceWorker.register("/service-worker.js")
+        .then(() => console.log("Service Worker Registered"))
+        .catch((err) => console.log("SW registration failed", err));
+      return;
+    }
+
+    const registrations = await navigator.serviceWorker.getRegistrations();
+    await Promise.all(registrations.map((registration) => registration.unregister()));
+
+    if (window.caches) {
+      const cacheKeys = await window.caches.keys();
+      await Promise.all(cacheKeys.map((cacheKey) => window.caches.delete(cacheKey)));
+    }
   });
 }

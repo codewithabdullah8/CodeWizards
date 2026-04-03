@@ -58,6 +58,8 @@ export default function MoodCheckin() {
     return moodEmojiMap[mood?.toLowerCase()] || "😐";
   };
 
+  const hasWeeklyMoodData = (analysis) => (analysis?.streak ?? 0) > 0;
+
   // Calculate ring background color based on average score
   const getRingValue = (avgScore) => {
     return Math.round((avgScore / 5) * 100);
@@ -73,10 +75,10 @@ export default function MoodCheckin() {
       distribution.anxious,
       distribution.frustrated
     );
-    if (
-      max === 0 ||
-      (distribution.calm > 20 && distribution.joyful > 20)
-    ) {
+    if (max === 0) {
+      return "No data yet";
+    }
+    if (distribution.calm > 20 && distribution.joyful > 20) {
       return "Balanced week";
     } else if (distribution.joyful === max) {
       return "Positive week";
@@ -512,22 +514,30 @@ export default function MoodCheckin() {
                     <span className="mood-summary__label">Overall Mood</span>
                     <h4 className="mood-summary__value">
                       {weeklyAnalysis
-                        ? weeklyAnalysis.overallMood.charAt(0).toUpperCase() + weeklyAnalysis.overallMood.slice(1)
+                        ? hasWeeklyMoodData(weeklyAnalysis)
+                          ? weeklyAnalysis.overallMood.charAt(0).toUpperCase() + weeklyAnalysis.overallMood.slice(1)
+                          : "No data yet"
                         : "Loading"}
                     </h4>
                     <span className="mood-summary__meta">
                       {weeklyAnalysis
-                        ? `${weeklyAnalysis.streak} entries ◆ ${weeklyAnalysis.peakDay || "No peak"} was your best day`
+                        ? hasWeeklyMoodData(weeklyAnalysis)
+                          ? `${weeklyAnalysis.streak} entries ◆ ${weeklyAnalysis.peakDay || "No peak"} was your best day`
+                          : "Log your first mood check-in to unlock weekly insights"
                         : "Loading..."}
                     </span>
                   </div>
                   <div
                     className="mood-summary__ring"
                     style={{
-                      "--value": weeklyAnalysis ? getRingValue(weeklyAnalysis.averageScore) : 0,
+                      "--value": weeklyAnalysis && typeof weeklyAnalysis.averageScore === "number"
+                        ? getRingValue(weeklyAnalysis.averageScore)
+                        : 0,
                     }}
                     aria-label={`Energy level ${
-                      weeklyAnalysis ? getRingValue(weeklyAnalysis.averageScore) : 0
+                      weeklyAnalysis && typeof weeklyAnalysis.averageScore === "number"
+                        ? getRingValue(weeklyAnalysis.averageScore)
+                        : 0
                     } percent`}
                   ></div>
                 </div>
@@ -537,7 +547,7 @@ export default function MoodCheckin() {
                     Streak: {weeklyAnalysis ? weeklyAnalysis.streak : 0} days
                   </span>
                   <span className="mood-chip">
-                    Peak: {weeklyAnalysis ? weeklyAnalysis.peakScore : 0}/5
+                    Peak: {weeklyAnalysis && hasWeeklyMoodData(weeklyAnalysis) ? weeklyAnalysis.peakScore : 0}/5
                   </span>
                   <span className="mood-chip">
                     Variability: {weeklyAnalysis ? weeklyAnalysis.variability : "N/A"}
@@ -786,7 +796,7 @@ export default function MoodCheckin() {
                                   color: "var(--text-primary)",
                                   textTransform: "capitalize",
                                 }}>
-                                  {week.overallMood}
+                                  {week.streak > 0 ? week.overallMood : "no data"}
                                 </h4>
                               </div>
                               <p style={{
@@ -811,7 +821,7 @@ export default function MoodCheckin() {
                                 fontSize: "0.9rem",
                                 fontWeight: "600",
                               }}>
-                                ⭐ {week.averageScore}/5
+                                ⭐ {typeof week.averageScore === "number" ? week.averageScore : "--"}/5
                               </div>
                               <div style={{
                                 padding: "8px 16px",

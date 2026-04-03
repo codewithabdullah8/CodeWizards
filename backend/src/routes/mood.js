@@ -219,6 +219,7 @@ function calculateWeeklyAnalysis(moods, startDate, endDate, weekId) {
 
   const distribution = { joyful: 0, calm: 0, low: 0, anxious: 0, frustrated: 0 };
   const dailyTrend = [];
+  const loggedScores = [];
   let totalScore = 0;
   let peakScore = 0;
   let peakDay = null;
@@ -240,6 +241,7 @@ function calculateWeeklyAnalysis(moods, startDate, endDate, weekId) {
       const moodInfo = moodToCategory[dayMood.mood.toLowerCase()] || { cat: "calm", score: 3 };
       distribution[moodInfo.cat]++;
       dailyTrend.push(moodInfo.score);
+      loggedScores.push(moodInfo.score);
       totalScore += moodInfo.score;
       loggedDays++;
       
@@ -254,50 +256,49 @@ function calculateWeeklyAnalysis(moods, startDate, endDate, weekId) {
         score: moodInfo.score,
       });
     } else {
-      // No mood logged - mark as neutral
-      distribution.calm++;
-      dailyTrend.push(3); // Neutral score
-      totalScore += 3;
-      loggedDays++;
-      
-      entries.push({
-        date: dayStr,
-        mood: "neutral",
-        score: 3,
-      });
+      // No mood logged for this day.
+      dailyTrend.push(0);
     }
   }
 
-  // Calculate distribution percentages (out of 7 days)
+  // Calculate distribution percentages based only on actual logged days.
   Object.keys(distribution).forEach(key => {
-    distribution[key] = Math.round((distribution[key] / 7) * 100);
+    distribution[key] = loggedDays > 0
+      ? Math.round((distribution[key] / loggedDays) * 100)
+      : 0;
   });
 
-  // Calculate variability
-  const avgScore = totalScore / 7;
-  const variance = dailyTrend.reduce((sum, score) => {
-    return sum + Math.pow(score - avgScore, 2);
-  }, 0) / 7;
-  const stdDev = Math.sqrt(variance);
-  let variability = "Low";
-  if (stdDev > 1.5) variability = "High";
-  else if (stdDev > 0.8) variability = "Moderate";
+  const avgScore = loggedDays > 0 ? totalScore / loggedDays : null;
+  let variability = "N/A";
 
-  // Determine overall mood based on distribution
-  const maxCat = Object.keys(distribution).reduce((a, b) => 
-    distribution[a] > distribution[b] ? a : b
-  );
-  const overallMood = maxCat === "joyful" ? "happy" : maxCat === "calm" ? "neutral" : maxCat === "low" ? "sad" : maxCat === "anxious" ? "anxious" : "angry";
+  if (loggedDays > 0) {
+    const variance = loggedScores.reduce((sum, score) => {
+      return sum + Math.pow(score - avgScore, 2);
+    }, 0) / loggedDays;
+    const stdDev = Math.sqrt(variance);
+    variability = "Low";
+    if (stdDev > 1.5) variability = "High";
+    else if (stdDev > 0.8) variability = "Moderate";
+  }
+
+  let overallMood = "none";
+
+  if (loggedDays > 0) {
+    const maxCat = Object.keys(distribution).reduce((a, b) => 
+      distribution[a] > distribution[b] ? a : b
+    );
+    overallMood = maxCat === "joyful" ? "happy" : maxCat === "calm" ? "neutral" : maxCat === "low" ? "sad" : maxCat === "anxious" ? "anxious" : "angry";
+  }
 
   return {
     weekId,
     startDate,
     endDate,
     overallMood,
-    averageScore: Math.round(avgScore * 10) / 10,
+    averageScore: avgScore === null ? null : Math.round(avgScore * 10) / 10,
     distribution,
     dailyTrend,
-    streak: moods.length, // Only count actual logged days
+    streak: loggedDays,
     peakDay,
     peakScore,
     variability,

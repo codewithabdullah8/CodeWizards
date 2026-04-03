@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useToast } from "../contexts/ToastContext";
 // import API from "../api";
@@ -12,8 +12,17 @@ import API from "../api";
 export default function Dashboard() {
   const navigate = useNavigate();
   const { addToast } = useToast();
+  const storedUser = localStorage.getItem("mydiary_user");
+  let user = null;
+
+  try {
+    user = storedUser ? JSON.parse(storedUser) : null;
+  } catch {
+    user = null;
+  }
   const [creating, setCreating] = useState(false);
   const [creatingSaving, setCreatingSaving] = useState(false);
+  const [showUpcomingPlans, setShowUpcomingPlans] = useState(false);
   const [createTitle, setCreateTitle] = useState("");
   const [createContent, setCreateContent] = useState("");
   const [createMusic, setCreateMusic] = useState("none");
@@ -39,6 +48,7 @@ const loadQuote = async () => {
     setQuote(data);
   } catch (err) {
     console.error("Quote error", err);
+    addToast("Failed to load quote", "error");
   }
 };
 
@@ -65,9 +75,12 @@ const loadWeeklyAnalysis = async () => {
 const getMoodEmoji = (mood) => {
   const moodEmojiMap = {
     happy: "😄",
+    joyful: "✨",
     sad: "😔",
     angry: "😠",
     anxious: "😰",
+    frustrated: "😤",
+    stressed: "😓",
     neutral: "😐",
     calm: "😌",
     tired: "😴",
@@ -287,6 +300,57 @@ const updateDaysWithEvents = (items, dateToCheck) => {
 
 
   const calendarDays = getDaysInMonth();
+  const firstName = user?.name ? user.name.split(" ")[0] : "there";
+  const hour = today.getHours();
+  const greeting = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
+  const todayLabel = today.toLocaleDateString("en-US", {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+  });
+  const insights = generateInsights(weeklyAnalysis);
+  const hasMoodData = (weeklyAnalysis?.streak ?? 0) > 0;
+  const averageMood = hasMoodData && typeof weeklyAnalysis?.averageScore === "number"
+    ? weeklyAnalysis.averageScore.toFixed(1)
+    : "--";
+  const streakValue = weeklyAnalysis?.streak ?? 0;
+  const todayEventsCount = scheduleItems.filter((item) => {
+    const itemDate = new Date(item.date);
+    return (
+      itemDate.getFullYear() === today.getFullYear() &&
+      itemDate.getMonth() === today.getMonth() &&
+      itemDate.getDate() === today.getDate()
+    );
+  }).length;
+  const upcomingEventsCount = scheduleItems.filter((item) => {
+    const itemDate = new Date(item.date);
+    itemDate.setHours(0, 0, 0, 0);
+    const currentDay = new Date(today);
+    currentDay.setHours(0, 0, 0, 0);
+    return itemDate >= currentDay;
+  }).length;
+  const upcomingPlans = scheduleItems
+    .filter((item) => {
+      const itemDate = new Date(item.date);
+      itemDate.setHours(0, 0, 0, 0);
+      const currentDay = new Date(today);
+      currentDay.setHours(0, 0, 0, 0);
+      return itemDate >= currentDay;
+    })
+    .sort((a, b) => {
+      const firstDate = new Date(`${new Date(a.date).toISOString().slice(0, 10)}T${a.time || "23:59"}`);
+      const secondDate = new Date(`${new Date(b.date).toISOString().slice(0, 10)}T${b.time || "23:59"}`);
+      return firstDate - secondDate;
+    });
+  const dominantMood = hasMoodData && weeklyAnalysis?.distribution
+    ? Object.entries(weeklyAnalysis.distribution)
+        .filter(([key]) => !["low", "high"].includes(key))
+        .sort(([, a], [, b]) => b - a)[0]
+    : null;
+  const dominantMoodLabel = dominantMood?.[0]
+    ? dominantMood[0].charAt(0).toUpperCase() + dominantMood[0].slice(1)
+    : "No data";
+  const reminderMessage = reminder?.message || "No reminder set for today. Add one to keep your writing routine consistent.";
 
   return (
     <motion.div
@@ -296,6 +360,91 @@ const updateDaysWithEvents = (items, dateToCheck) => {
       transition={{ duration: 0.5 }}
     >
       <div className="container-fluid px-4">
+        <motion.section
+          className="dashboard-hero"
+          initial={{ y: 12, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ duration: 0.45 }}
+        >
+          <div className="dashboard-hero__copy">
+            <span className="dashboard-kicker">{todayLabel}</span>
+            <h1 className="dashboard-title">{greeting}, {firstName}</h1>
+            <p className="dashboard-subtitle">
+              Capture the day, review your mood pattern, and keep your next steps visible from one place.
+            </p>
+
+            <div className="dashboard-hero__actions">
+              <Link
+                to="/mood-checkin"
+                className="dashboard-hero__btn dashboard-hero__btn--secondary"
+              >
+                <i className="bi bi-emoji-smile"></i>
+                Mood Check-In
+              </Link>
+              <Link
+                to="/recent"
+                className="dashboard-hero__btn dashboard-hero__btn--ghost"
+              >
+                <i className="bi bi-clock-history"></i>
+                Recent Entries
+              </Link>
+            </div>
+
+            <div className="dashboard-hero__meta">
+              <span className="dashboard-meta-pill">
+                <i className="bi bi-bell"></i>
+                {reminder ? "Reminder ready" : "No reminder yet"}
+              </span>
+              <span className="dashboard-meta-pill">
+                <i className="bi bi-calendar-event"></i>
+                {todayEventsCount} event{todayEventsCount === 1 ? "" : "s"} today
+              </span>
+            </div>
+          </div>
+
+          <div className="dashboard-stat-grid">
+            <div className="dashboard-stat-card">
+              <span className="dashboard-stat-icon gradient-blue">
+                <i className="bi bi-graph-up-arrow"></i>
+              </span>
+              <strong className="dashboard-stat-value">{averageMood}</strong>
+              <span className="dashboard-stat-label">Weekly Avg Mood</span>
+              <small className="dashboard-stat-note">{hasMoodData ? "Out of 5.0 this week" : "No mood check-ins yet"}</small>
+            </div>
+
+            <div className="dashboard-stat-card">
+              <span className="dashboard-stat-icon gradient-coral">
+                <i className="bi bi-fire"></i>
+              </span>
+              <strong className="dashboard-stat-value">{streakValue}</strong>
+              <span className="dashboard-stat-label">Check-In Streak</span>
+              <small className="dashboard-stat-note">Logged days in current run</small>
+            </div>
+
+            <button
+              type="button"
+              className="dashboard-stat-card dashboard-stat-card--interactive"
+              onClick={() => setShowUpcomingPlans(true)}
+            >
+              <span className="dashboard-stat-icon gradient-mint">
+                <i className="bi bi-calendar2-week"></i>
+              </span>
+              <strong className="dashboard-stat-value">{upcomingEventsCount}</strong>
+              <span className="dashboard-stat-label">Upcoming Plans</span>
+              <small className="dashboard-stat-note">Scheduled from today onward</small>
+            </button>
+
+            <div className="dashboard-stat-card">
+              <span className="dashboard-stat-icon gradient-violet">
+                <i className="bi bi-stars"></i>
+              </span>
+              <strong className="dashboard-stat-value">{getMoodEmoji(dominantMoodLabel)}</strong>
+              <span className="dashboard-stat-label">Dominant Mood</span>
+              <small className="dashboard-stat-note">{dominantMoodLabel}</small>
+            </div>
+          </div>
+        </motion.section>
+
         <div className="row g-4">
           {/* LEFT: Calendar */}
           <div className="col-lg-4">
@@ -428,126 +577,87 @@ const updateDaysWithEvents = (items, dateToCheck) => {
           {/* RIGHT: Quote & Mood */}
           <div className="col-lg-8">
             <motion.div
-              className="card border-0"
-              style={{
-                boxShadow: '0 8px 24px rgba(102, 126, 234, 0.12)',
-                borderRadius: '16px',
-                overflow: 'hidden',
-                background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.95) 100%)'
-              }}
+              className="dashboard-panel dashboard-panel--quote"
               initial={{ x: 20, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
               transition={{ delay: 0.2, duration: 0.5 }}
             >
-              <div className="card-body p-0">
-                {/* Quote Header */}
-                <div style={{
-                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                  padding: '16px 24px',
-                  color: 'white',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '12px'
-                }}>
-                  <i className="bi bi-chat-quote" style={{ fontSize: '20px', opacity: '0.9' }}></i>
-                  <span style={{ fontWeight: '600', fontSize: '14px' }}>Quote of the Day</span>
+              <div className="dashboard-panel__header">
+                <div className="dashboard-panel__title-wrap">
+                  <span className="dashboard-panel__icon">
+                    <i className="bi bi-chat-quote"></i>
+                  </span>
+                  <div>
+                    <span className="dashboard-panel__eyebrow">Quote of the Day</span>
+                    <h3 className="dashboard-panel__title">A line to anchor your day</h3>
+                  </div>
                 </div>
-                
-                {/* Quote Content */}
-                <div style={{ padding: '32px 24px' }}>
-                  <blockquote className="blockquote mb-0" style={{ borderLeftColor: '#667eea' }}>
-                    <p className="mb-4" style={{ 
-                      fontSize: '18px', 
-                      fontWeight: '500',
-                      color: '#1e293b',
-                      lineHeight: '1.6',
-                      fontStyle: 'italic'
-                    }}>
-                      "{quote.text}"
-                    </p>
-                    <footer style={{
-                      fontSize: '13px',
-                      color: '#64748b',
-                      fontWeight: '500',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '8px'
-                    }}>
-                      <i className="bi bi-person-circle" style={{ fontSize: '16px' }}></i>
-                      {quote.author}
-                    </footer>
-                  </blockquote>
-                </div>
+              </div>
+
+              <div className="dashboard-panel__content">
+                <blockquote className="dashboard-quote-block mb-0">
+                  <p className="dashboard-quote-text">&quot;{quote.text}&quot;</p>
+                  <footer className="dashboard-quote-author">
+                    <i className="bi bi-person-circle"></i>
+                    {quote.author}
+                  </footer>
+                </blockquote>
               </div>
             </motion.div>
 
             {/* Weekly Insight Section */}
             <motion.div
-              className="card border-0 mt-4"
-              style={{
-                boxShadow: '0 8px 24px rgba(102, 126, 234, 0.12)',
-                borderRadius: '16px',
-                overflow: 'hidden',
-                background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.95) 100%)'
-              }}
+              className="dashboard-panel dashboard-panel--insight mt-4"
               initial={{ x: 20, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
               transition={{ delay: 0.3, duration: 0.5 }}
             >
-              <div className="card-body p-0">
-                {/* Weekly Insight Header */}
-                <div style={{
-                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                  padding: '16px 24px',
-                  color: 'white',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '12px'
-                }}>
-                  <i className="bi bi-lightbulb-fill" style={{ fontSize: '20px', opacity: '0.9' }}></i>
-                  <span style={{ fontWeight: '600', fontSize: '14px' }}>Weekly Insight</span>
+              <div className="dashboard-panel__header">
+                <div className="dashboard-panel__title-wrap">
+                  <span className="dashboard-panel__icon">
+                    <i className="bi bi-lightbulb-fill"></i>
+                  </span>
+                  <div>
+                    <span className="dashboard-panel__eyebrow">Weekly Insight</span>
+                    <h3 className="dashboard-panel__title">Patterns worth noticing</h3>
+                  </div>
                 </div>
-                
-                {/* Weekly Insight Content */}
-                <div style={{ padding: '24px' }}>
-                  {weeklyAnalysis ? (
-                    <>
-                      <p style={{
-                        fontSize: '16px',
-                        color: '#1e293b',
-                        lineHeight: '1.6',
-                        marginBottom: '16px'
-                      }}>
-                        {generateInsights(weeklyAnalysis).main}
-                      </p>
-                      <div style={{
-                        display: 'flex',
-                        flexWrap: 'wrap',
-                        gap: '8px'
-                      }}>
-                        {generateInsights(weeklyAnalysis).actionItems.map((item, idx) => (
-                          <button
-                            key={idx}
-                            className="btn btn-sm btn-outline-primary"
-                            style={{
-                              fontSize: '12px',
-                              whiteSpace: 'normal',
-                              wordWrap: 'break-word',
-                              padding: '8px 12px',
-                              lineHeight: '1.3',
-                            }}
-                          >
-                            {item}
-                          </button>
-                        ))}
+                <Link
+                  to="/mood-checkin"
+                  className="dashboard-panel__action"
+                >
+                  <i className="bi bi-arrow-right"></i>
+                  Open Mood Check-In
+                </Link>
+              </div>
+
+              <div className="dashboard-panel__content">
+                {hasMoodData && weeklyAnalysis && insights ? (
+                  <>
+                    <div className="dashboard-insight-summary">
+                      <div className="dashboard-insight-meter">
+                        <span className="dashboard-insight-meter__label">Weekly score</span>
+                        <strong className="dashboard-insight-meter__value">{averageMood}/5</strong>
                       </div>
-                    </>
-                  ) : (
-                    <p style={{ color: '#aaa', fontSize: '14px', margin: 0 }}>
-                      Complete your mood check-in to see personalized insights.
-                    </p>
-                  )}
-                </div>
+                      <div className="dashboard-insight-copy">
+                        <p className="dashboard-insight-main">{insights.main}</p>
+                      </div>
+                    </div>
+
+                    <div className="dashboard-insight-pills">
+                      {insights.actionItems.map((item, idx) => (
+                        <span key={idx} className="dashboard-insight-pill">
+                          {item}
+                        </span>
+                      ))}
+                    </div>
+                  </>
+                ) : (
+                  <div className="dashboard-empty-state">
+                    <i className="bi bi-emoji-neutral"></i>
+                    <p>Complete your mood check-in to see personalized insights.</p>
+                  </div>
+                )}
               </div>
             </motion.div>
           </div>
@@ -665,283 +775,100 @@ const updateDaysWithEvents = (items, dateToCheck) => {
         </motion.div>
       )}
 
-      <style>{`
-        .dashboard-container {
-          min-height: 100vh;
-          background: linear-gradient(135deg, #e8d4f8 0%, #d8c5f0 100%);
-          padding-top: 2rem;
-          overflow-y: auto;
-          overflow-x: hidden;
-          max-height: calc(100vh - 64px);
-        }
+      {showUpcomingPlans && (
+        <motion.div
+          className="modal-backdrop-custom"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          onClick={() => setShowUpcomingPlans(false)}
+        >
+          <motion.div
+            className="modal-content-custom upcoming-plans-modal"
+            initial={{ scale: 0.94, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.94, opacity: 0 }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="modal-header-custom">
+              <h4 className="mb-0">
+                <i className="bi bi-calendar2-week me-2"></i>
+                Upcoming Plans
+              </h4>
+              <button
+                type="button"
+                className="btn btn-outline-secondary"
+                onClick={() => setShowUpcomingPlans(false)}
+              >
+                <i className="bi bi-x"></i>
+              </button>
+            </div>
 
-        body {
-          overflow: hidden;
-        }
+            <div className="modal-body-custom">
+              {upcomingPlans.length > 0 ? (
+                <div className="upcoming-plans-list">
+                  {upcomingPlans.map((plan) => {
+                    const planDate = new Date(plan.date);
+                    return (
+                      <button
+                        key={plan._id}
+                        type="button"
+                        className="upcoming-plan-item"
+                        onClick={() => {
+                          setShowUpcomingPlans(false);
+                          navigate(`/schedule/item/${plan._id}`);
+                        }}
+                      >
+                        <div className="upcoming-plan-item__head">
+                          <div>
+                            <div className="upcoming-plan-item__title">{plan.title}</div>
+                            <div className="upcoming-plan-item__meta">
+                              <span>
+                                <i className="bi bi-calendar3"></i>
+                                {planDate.toLocaleDateString("en-US", {
+                                  weekday: "short",
+                                  month: "short",
+                                  day: "numeric",
+                                })}
+                              </span>
+                              <span>
+                                <i className="bi bi-clock"></i>
+                                {plan.time || "All day"}
+                              </span>
+                            </div>
+                          </div>
+                          <span className={`priority-badge priority-${plan.priority?.toLowerCase() || "medium"}`}>
+                            {plan.priority || "Medium"}
+                          </span>
+                        </div>
 
-        .calendar-label-card {
-          background: linear-gradient(135deg, #ff8a9d 0%, #f8a5c2 100%);
-          border-radius: 12px;
-          padding: 18px 20px;
-          position: relative;
-          overflow: hidden;
-          box-shadow: 0 4px 12px rgba(255, 138, 157, 0.2);
-        }
-        
-        .calendar-rings {
-          display: flex;
-          gap: 8px;
-          margin-bottom: 12px;
-          justify-content: center;
-        }
-        
-        .ring {
-          width: 10px;
-          height: 10px;
-          border: 2px solid #3d5a80;
-          border-radius: 50%;
-          background: transparent;
-        }
-        
-        .calendar-label-text {
-          color: white;
-          font-weight: 700;
-          font-size: 14px;
-          letter-spacing: 2px;
-          text-align: center;
-        }
-        
-        .calendar-grid {
-          display: grid;
-          grid-template-columns: repeat(7, 1fr);
-          gap: 10px;
-          background: white;
-          padding: 20px;
-          border-radius: 12px;
-        }
+                        {plan.description && (
+                          <p className="upcoming-plan-item__description">
+                            {plan.description}
+                          </p>
+                        )}
 
-        .calendar-day-header {
-          text-align: center;
-          font-weight: 600;
-          color: #adb5bd;
-          font-size: 11px;
-          padding: 10px 0;
-          text-transform: uppercase;
-          letter-spacing: 0.5px;
-        }
-
-        .calendar-day {
-          aspect-ratio: 1;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          border-radius: 50%;
-          cursor: pointer;
-          font-size: 14px;
-          color: #8e9aaf;
-          background: #f8f9fa;
-          border: none;
-          transition: all 0.3s ease;
-          font-weight: 500;
-        }
-
-        .calendar-day:hover:not(.empty) {
-          background: #e9ecef;
-          color: #5a67d8;
-          transform: scale(1.05);
-        }
-
-        .calendar-day.active {
-          background: #5a67d8;
-          color: white;
-          border: none;
-          font-weight: 600;
-        }
-
-        .calendar-day.empty {
-          background: transparent;
-          border: none;
-          cursor: default;
-        }
-
-        /* Dark Mode Calendar Styles */
-        .dark-mode .calendar-grid {
-          background: #1e293b;
-        }
-
-        .dark-mode .calendar-day-header {
-          color: #94a3b8;
-        }
-
-        .dark-mode .calendar-day {
-          color: #cbd5e1;
-          background: #334155;
-        }
-
-        .dark-mode .calendar-day:hover:not(.empty) {
-          background: #475569;
-          color: #a78bfa;
-        }
-
-        .dark-mode .calendar-day.active {
-          background: #7c3aed;
-          color: white;
-        }
-
-        .dark-mode .calendar-day.empty {
-          background: transparent;
-        }
-
-        .mood-item {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          gap: 8px;
-          flex: 0 0 calc(14.28% - 15px);
-        }
-
-        .modal-backdrop-custom {
-          position: fixed;
-          top: 0;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          background: rgba(0, 0, 0, 0.5);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          z-index: 1000;
-        }
-
-        .modal-content-custom {
-          background: white;
-          border-radius: 12px;
-          box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
-          width: 90%;
-          max-width: 500px;
-          max-height: 90vh;
-          overflow-y: auto;
-        }
-
-        .modal-header-custom {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          padding: 20px;
-          border-bottom: 1px solid #e9ecef;
-        }
-
-        .modal-body-custom {
-          padding: 20px;
-        }
-
-        .cursor-pointer {
-          cursor: pointer;
-        }
-
-        .mood-container {
-          -ms-overflow-style: none;
-          scrollbar-width: none;
-        }
-
-        .mood-container::-webkit-scrollbar {
-          display: none;
-        }
-
-        .mood-analysis-container {
-          max-height: 600px;
-          overflow-y: auto;
-          padding-right: 8px;
-        }
-
-        .mood-analysis-container::-webkit-scrollbar {
-          width: 8px;
-        }
-
-        .mood-analysis-container::-webkit-scrollbar-track {
-          background: #f1f5f9;
-          border-radius: 10px;
-        }
-
-        .mood-analysis-container::-webkit-scrollbar-thumb {
-          background: linear-gradient(180deg, #667eea, #764ba2);
-          border-radius: 10px;
-        }
-
-        .mood-analysis-container::-webkit-scrollbar-thumb:hover {
-          background: linear-gradient(180deg, #5568d3, #653a91);
-        }
-
-        .mood-stat {
-          padding: 12px 0;
-        }
-
-        .mood-stat-label {
-          font-size: 13px;
-          font-weight: 600;
-          color: #475569;
-          display: flex;
-          align-items: center;
-          gap: 6px;
-        }
-
-        .mood-stat-value {
-          font-size: 13px;
-          font-weight: 700;
-          background: linear-gradient(135deg, #667eea, #764ba2);
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          background-clip: text;
-        }
-
-        .mood-progress-bar {
-          height: 10px;
-          background: #e2e8f0;
-          border-radius: 5px;
-          overflow: hidden;
-          box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
-        }
-
-        .mood-progress-fill {
-          height: 100%;
-          border-radius: 5px;
-          transition: width 0.3s ease;
-        }
-
-        .mood-overall-stat {
-          box-shadow: 0 4px 12px rgba(254, 200, 150, 0.2);
-        }
-
-        .dark-mode .mood-analysis-container {
-          background: #1e293b;
-        }
-
-        .dark-mode .mood-analysis-container::-webkit-scrollbar-track {
-          background: #0f172a;
-        }
-
-        .dark-mode .mood-analysis-container::-webkit-scrollbar-thumb {
-          background: linear-gradient(180deg, #667eea, #764ba2);
-        }
-
-        .dark-mode .mood-stat-label {
-          color: #cbd5e1;
-        }
-
-        .dark-mode .mood-progress-bar {
-          background: #334155;
-        }
-
-        .dark-mode .card {
-          background: linear-gradient(135deg, rgba(30, 41, 59, 0.8) 0%, rgba(15, 23, 42, 0.8) 100%) !important;
-        }
-
-        .blockquote {
-          border-left: 3px solid #667eea;
-          padding-left: 15px;
-          margin-left: 0;
-        }
-      `}</style>
+                        <div className="upcoming-plan-item__footer">
+                          <span className="upcoming-plan-item__category">{plan.category || "General"}</span>
+                          <span className="upcoming-plan-item__open">
+                            Open
+                            <i className="bi bi-arrow-right"></i>
+                          </span>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="dashboard-empty-state upcoming-plans-empty">
+                  <i className="bi bi-calendar-x"></i>
+                  <p>No upcoming plans yet.</p>
+                </div>
+              )}
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
     </motion.div>
   );
 }

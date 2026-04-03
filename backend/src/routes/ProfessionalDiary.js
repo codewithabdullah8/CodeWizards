@@ -19,7 +19,15 @@ router.get("/all", auth, async (req, res) => {
 // ➤ Get single entry
 router.get("/entry/:id", auth, async (req, res) => {
   try {
-    const entry = await ProfessionalDiary.findById(req.params.id);
+    const entry = await ProfessionalDiary.findOne({
+      _id: req.params.id,
+      userId: req.user.id,
+    });
+
+    if (!entry) {
+      return res.status(404).json({ message: "Entry not found" });
+    }
+
     res.json(entry);
   } catch (err) {
     res.status(404).json({ message: "Entry not found" });
@@ -43,11 +51,18 @@ router.post("/new", auth, async (req, res) => {
 // ➤ Update entry
 router.put("/update/:id", auth, async (req, res) => {
   try {
-    const updated = await ProfessionalDiary.findByIdAndUpdate(
-      req.params.id,
+    const updated = await ProfessionalDiary.findOneAndUpdate(
+      {
+        _id: req.params.id,
+        userId: req.user.id,
+      },
       req.body,
       { new: true }
     );
+
+    if (!updated) {
+      return res.status(404).json({ message: "Entry not found" });
+    }
 
     res.json(updated);
   } catch (err) {
@@ -58,7 +73,15 @@ router.put("/update/:id", auth, async (req, res) => {
 // ➤ Delete entry
 router.delete("/delete/:id", auth, async (req, res) => {
   try {
-    await ProfessionalDiary.findByIdAndDelete(req.params.id);
+    const deleted = await ProfessionalDiary.findOneAndDelete({
+      _id: req.params.id,
+      userId: req.user.id,
+    });
+
+    if (!deleted) {
+      return res.status(404).json({ message: "Entry not found" });
+    }
+
     res.json({ message: "Deleted successfully" });
   } catch (err) {
     res.status(400).json({ message: err.message });

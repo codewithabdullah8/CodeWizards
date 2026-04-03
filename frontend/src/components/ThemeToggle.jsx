@@ -4,6 +4,11 @@ import { useTheme } from '../contexts/ThemeContext';
 const ThemeToggle = ({ className = '', size = 'normal' }) => {
   const { isDarkMode, toggleTheme } = useTheme();
 
+  const handleClick = (event) => {
+    event.stopPropagation();
+    toggleTheme();
+  };
+
   const sizeClasses = {
     small: 'theme-toggle-small',
     normal: 'theme-toggle-normal',
@@ -12,10 +17,12 @@ const ThemeToggle = ({ className = '', size = 'normal' }) => {
 
   return (
     <button
+      type="button"
       className={`theme-toggle ${sizeClasses[size]} ${className}`}
-      onClick={toggleTheme}
+      onClick={handleClick}
       title={isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
       aria-label={isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+      aria-pressed={isDarkMode}
     >
       <i className={`bi ${isDarkMode ? 'bi-sun' : 'bi-moon'}`}></i>
       {size !== 'small' && (

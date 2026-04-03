@@ -639,3 +639,5 @@
 .dark-mode .auth-card { background: rgba(30, 41, 59, 0.9); border-color: rgba(71, 85, 105, 0.3); }
 .dark-mode .form-input { background: rgba(15, 23, 42, 0.6); border-color: rgba(71, 85, 105, 0.4); color: #f1f5f9; }
 .dark-mode .auth-google-btn { background: rgba(30, 41, 59, 0.7); border-color: rgba(71, 85, 105, 0.4); color: #f1f5f9; }
+.dark-mode .auth-divider::before { background: linear-gradient(90deg, transparent, rgba(148, 163, 184, 0.28), transparent); }
+.dark-mode .auth-divider span { background: rgba(30, 41, 59, 0.9); color: #cbd5e1; }

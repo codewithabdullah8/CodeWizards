@@ -14,7 +14,9 @@ API.interceptors.request.use((req) => {
 });
 
 const QuoteAPI = {
-  getToday: () => API.get("/today"),
+  getToday: (refresh = false) => API.get("/today", {
+    params: refresh ? { refresh: true, t: Date.now() } : {},
+  }),
 };
 
 export default QuoteAPI;

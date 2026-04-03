@@ -95,6 +95,12 @@ export default function Navbar({ user, onLogout }) {
     };
   }, [settingsOpen]);
 
+  useEffect(() => {
+    setUserMenuOpen(false);
+    setNavMenuOpen(false);
+    setSettingsOpen(false);
+  }, [location.pathname]);
+
   const navItems = [
     { path: "/", label: t('dashboard'), icon: "bi-house" },
     { path: "/recent", label: t('recentEntries'), icon: "bi-clock-history" },
